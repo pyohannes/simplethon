@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 ### +
 import os
 import shutil
@@ -52,6 +53,14 @@ def make_clean():
     shutil.rmtree(OBJDIR)
 
 
+def make_test():
+    pythondir = 'python'
+
+    sys.path.insert(0, os.path.abspath(pythondir))
+
+    _execute([ 'py.test' ] + sys.argv[2:])
+
+
 def print_usage():
     print("ERROR: Usage: make.py doc|clean")
 
@@ -62,6 +71,8 @@ if __name__ == '__main__':
             make_doc()
         elif sys.argv[1] == 'clean':
             make_clean()
+        elif sys.argv[1] == 'test':
+            make_test()
         else:
             print_usage()
             sys.exit(1)
