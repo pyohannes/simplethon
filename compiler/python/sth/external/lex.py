@@ -68,6 +68,14 @@ class LexToken(object):
     def __repr__(self):
         return str(self)
 
+    def copy(self, type=None):
+        t = self.__class__()
+        t.type = type or self.type
+        t.value = self.value
+        t.lineno = self.lineno
+        t.lexpos = self.lexpos
+        return t
+
 
 # This object is a stand-in for a logging object created by the
 # logging module.
@@ -141,6 +149,7 @@ class Lexer:
         self.lineno = 1               # Current line number
         self.lexoptimize = False      # Optimized mode
         self._tokenstack = []
+        self.indentstack = []
 
     def clone(self, object=None):
         c = copy.copy(self)

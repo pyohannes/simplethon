@@ -26,9 +26,15 @@ def _execute(cmd):
 def make_doc():
     _ensure_objdir()
 
+    src = [ 'python/sth/parser.py',
+            'python/sth/ast.py' ]
+
     rootdoc = 'doc/compiler.tex'
 
-    src = [ 'python/sth/parser.py' ]
+    docs = [ rootdoc,
+             'doc/introduction.tex',
+             'doc/workflow.tex'
+           ]
 
     rootdoc = os.path.join(CWD, rootdoc)
     src = [ os.path.join(CWD, s) for s in src ]
@@ -36,7 +42,8 @@ def make_doc():
     olddir = os.getcwd()
     try:
         os.chdir(DOCDIR)
-        shutil.copyfile(rootdoc, os.path.basename(rootdoc))
+        for d in docs:
+            shutil.copyfile(os.path.join(CWD, d), os.path.basename(d))
         for s in src:
             _execute([
                 'fetzen', 
@@ -56,7 +63,7 @@ def make_clean():
 def make_test():
     pythondir = 'python'
 
-    sys.path.insert(0, os.path.abspath(pythondir))
+    os.environ['PYTHONPATH'] = os.path.abspath(pythondir)
 
     _execute([ 'py.test' ] + sys.argv[2:])
 
