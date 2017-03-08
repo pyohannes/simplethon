@@ -150,6 +150,7 @@ class Lexer:
         self.lexoptimize = False      # Optimized mode
         self._tokenstack = []
         self.indentstack = []
+        self.parenstack = []
 
     def clone(self, object=None):
         c = copy.copy(self)
@@ -380,6 +381,13 @@ class Lexer:
             else:
                 # No match, see if in literals
                 if lexdata[lexpos] in self.lexliterals:
+
+                    c = lexdata[lexpos]
+                    if c in '([{':
+                        self.parenstack.insert(0, c)
+                    if c in ')]}':
+                        self.parenstack.pop()
+
                     tok = LexToken()
                     tok.value = lexdata[lexpos]
                     tok.lineno = self.lineno

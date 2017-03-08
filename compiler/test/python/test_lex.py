@@ -203,6 +203,7 @@ def test_literals():
 ( )
 > <
 == != <= >=
+->
 """,
 """LexToken(:,':',1,0)
 LexToken(=,'=',1,2)
@@ -225,6 +226,8 @@ LexToken(NOTEQUALS,'!=',5,27)
 LexToken(LESSEQUALS,'<=',5,30)
 LexToken(GREATEREQUALS,'>=',5,33)
 LexToken(NEWLINE,'\\n',5,35)
+LexToken(RIGHTARROW,'->',6,36)
+LexToken(NEWLINE,'\\n',6,38)
 """, 0)
 
 
