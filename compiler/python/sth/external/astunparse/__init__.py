@@ -9,12 +9,12 @@ __version__ = '1.5.0'
 
 
 def unparse(tree):
-    v = cStringIO()
+    v = StringIO()
     Unparser(tree, file=v)
     return v.getvalue()
 
 
 def dump(tree):
-    v = cStringIO()
+    v = StringIO()
     Printer(file=v).visit(tree)
     return v.getvalue()
