@@ -64,6 +64,14 @@ class Unparser:
         meth = getattr(self, "_"+tree.__class__.__name__)
         meth(tree)
 
+        ignore_instances = ( ast.FunctionDef, ast.Assign, ast.Call )
+        if hasattr(tree, 'tp'):
+            for i in ignore_instances:
+                if isinstance(tree, i):
+                    break
+            else:
+                self.write('{%s}' % tree.tp)
+
 
     ############### Unparsing methods ######################
     # There should be one method per concrete grammar type #
@@ -311,7 +319,10 @@ class Unparser:
         for deco in t.decorator_list:
             self.fill("@")
             self.dispatch(deco)
-        self.fill(("async " if async else "") + "def " + t.name + "(")
+        typedef = ''
+        if hasattr(t, 'tp'):
+            typedef = '{%s}' % str(t.tp)
+        self.fill(("async " if async else "") + "def " + t.name + typedef + "(")
         self.dispatch(t.args)
         self.write(")")
         if getattr(t, "returns", False):

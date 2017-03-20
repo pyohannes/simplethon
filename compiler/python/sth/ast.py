@@ -6,9 +6,10 @@ import sth.external.astunparse
 
 
 class RecursiveNodeVisitor(NodeVisitor):
-    def __init__(self, filename):
+    def __init__(self, filename, children_first=False):
         super(RecursiveNodeVisitor, self).__init__()
         self.filename = filename
+        self.children_first = children_first
         self.current_lineno = 0
         self.current_col_offset = 0
         self.path = []
@@ -20,9 +21,12 @@ class RecursiveNodeVisitor(NodeVisitor):
                 self.current_lineno = node.lineno
                 self.current_col_offset = node.col_offset
             except AttributeError: pass
-            super(RecursiveNodeVisitor, self).visit(node)
+            if not self.children_first:
+                super(RecursiveNodeVisitor, self).visit(node)
             for n in iter_child_nodes(node):
                 self.visit(n)
+            if self.children_first:
+                super(RecursiveNodeVisitor, self).visit(node)
         finally:
             self.path.pop()
 
@@ -37,6 +41,27 @@ class RecursiveNodeVisitor(NodeVisitor):
         error.offset = self.current_col_offset
         error.filename = self.filename
         raise error
+
+    def replace_in_parent(self, old, new):
+        parent = self.path[-2]
+        for f in parent._fields:
+            child = getattr(parent, f)
+            if child is old:
+                setattr(parent, f, new)
+            elif isinstance(child, list):
+                child = [ new if c is old else c for c in child ]
+                setattr(parent, f, child)
+
+    def copy_source_attrs(self, src, dsts):
+        try:
+            dsts[0]
+        except:
+            dsts = [ dsts ]
+        try:
+            for d in dsts:
+                d.lineno = src.lineno
+                d.col_offset = src.col_offset
+        except AttributeError: pass
 
 
 class RestrictKeywords(RecursiveNodeVisitor):
