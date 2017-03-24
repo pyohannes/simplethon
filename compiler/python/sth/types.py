@@ -18,17 +18,17 @@ class Num(Type):
     def populate(self):
         self.members = dict(
                 __lt__=Function(collections.OrderedDict(self=self, n=self),
-                                Bool()),
+                                bool_),
                 __gt__=Function(collections.OrderedDict(self=self, n=self),
-                                Bool()),
+                                bool_),
                 __le__=Function(collections.OrderedDict(self=self, n=self),
-                                Bool()),
+                                bool_),
                 __ge__=Function(collections.OrderedDict(self=self, n=self),
-                                Bool()),
+                                bool_),
                 __eq__=Function(collections.OrderedDict(self=self, n=self),
-                                Bool()),
+                                bool_),
                 __ne__=Function(collections.OrderedDict(self=self, n=self),
-                                Bool()),
+                                bool_),
                 __add__=Function(collections.OrderedDict(self=self, n=self),
                                 self),
                 __sub__=Function(collections.OrderedDict(self=self, n=self),
@@ -39,6 +39,8 @@ class Num(Type):
                                 self),
                 __mod__=Function(collections.OrderedDict(self=self, n=self),
                                 self),
+                __bool__=Function(collections.OrderedDict(self=self),
+                                bool_),
                 __int__=Function(collections.OrderedDict(self=self),
                                 int_),
                 __float__=Function(collections.OrderedDict(self=self),
@@ -55,6 +57,13 @@ class Float(Num):
 
 class Bool(Type):
     name = 'bool'
+
+    def populate(self):
+        self.members = dict(
+                __int__=Function(collections.OrderedDict(self=self),
+                                int_),
+                __eq__=Function(collections.OrderedDict(self=self, b=self),
+                                bool_))
 
 
 class Custom(Type):
@@ -97,5 +106,5 @@ int_ = Int()
 float_ = Float()
 bool_ = Bool()
 
-for t in (int_, float_):
+for t in (int_, float_, bool_):
     t.populate()

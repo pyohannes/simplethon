@@ -25,9 +25,6 @@ def annotation_to_type(node):
 
 class AddScopes(ast.RecursiveNodeVisitor):
 
-    __scopefields__ = (
-            'body', 'orelse')
-
     class Scope(dict):
         def __init__(self, parent=None):
             self.parent = parent
@@ -74,20 +71,14 @@ class LinkVariables(ast.RecursiveNodeVisitor):
 
     def visit_assign(self, node):
         name = node.targets[0].id
-        if name not in node.sp:
+        if name and name not in node.sp:
             node.sp[name] = node.targets[0]
 
     def visit_functiondef(self, node):
         if node.name not in node.sp.parent:
-            name = ast.Name()
-            name.id = node.name
-            self.copy_source_attrs(node, name)
-            node.sp.parent[node.name] = name
+            node.sp.parent[node.name] = self.make_name(node.name, node)
         for arg in node.args.args:
-            name = ast.Name()
-            name.id = arg.arg
-            self.copy_source_attrs(arg, name)
-            node.sp[name.id] = name
+            node.sp[arg.arg] = self.make_name(arg.arg, node)
 
     def visit_name(self, node):
         if node.id in node.sp:
@@ -157,13 +148,13 @@ class Convert(ast.RecursiveNodeVisitor):
             self.raise_syntax_error(
                     "%s needs %d arguments, got %d" % (node.func, len(argtps),
                         len(node.args)))
-        newargs = []
-        for arg, argtp in zip(node.args, argtps):
-            if arg.tp != argtp:
-                newargs.append(self._adapt_type(argtp, arg))
-            else:
-                newargs.append(arg)
-        node.args = newargs
+        node.args = [
+                self._adapt_type(argtp, arg) if arg.tp != argtp else arg \
+                for arg, argtp in zip(node.args, argtps) ]
+
+    def visit_if(self, node):
+        if node.test.tp != types.bool_:
+            node.test = self._adapt_type(types.bool_, node.test)
 
     def visit_return(self, node):
         rettp = None
@@ -187,7 +178,9 @@ class Convert(ast.RecursiveNodeVisitor):
         call.keywords = []
         call.tp = conv.tp.returns
 
-        return call
+        name = self.make_anonym_assign(call)
+        name.tp = call.tp
+        return name
 
 
 def typify(tree):

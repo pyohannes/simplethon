@@ -23,6 +23,20 @@ def interleave(inter, f, seq):
             inter()
             f(x)
 
+
+class GenerateId(dict):
+
+    def __init__(self):
+        self.counter = 1
+
+    def __getitem__(self, key):
+        if not key in self:
+            name = '<genid%d>' % self.counter
+            self[key] = name
+            self.counter += 1
+        return super(GenerateId, self).__getitem__(key)
+            
+
 class Unparser:
     """Methods in this class recursively traverse an AST and
     output source code for the abstract syntax; original formatting
@@ -31,6 +45,8 @@ class Unparser:
     def __init__(self, tree, file=sys.stdout):
         """Unparser(tree, file=sys.stdout) -> None.
          Print the source for tree to file."""
+        self.generate_id = GenerateId()
+        self.avoid_fill = 0
         self.f = file
         self.future_imports = []
         self._indent = 0
@@ -40,7 +56,11 @@ class Unparser:
 
     def fill(self, text = ""):
         "Indent a piece of text, according to the current indentation level"
-        self.f.write("\n"+"    "*self._indent + text)
+        if self.avoid_fill:
+            self.write(text)
+            self.avoid_fill -= 1
+        else:
+            self.f.write("\n"+"    "*self._indent + text)
 
     def write(self, text):
         "Append a piece of text to the current line."
@@ -79,6 +99,17 @@ class Unparser:
     # this would follow the order in the grammar, but      #
     # currently doesn't.                                   #
     ########################################################
+
+    def _GotoLabel(self, tree):
+        self.fill()
+        self.dispatch(tree.name)
+        self.write(': ')
+        self.avoid_fill = 1
+
+    def _Goto(self, tree):
+        self.fill("goto")
+        self.write(" ")
+        self.dispatch(tree.name)
 
     def _Module(self, tree):
         for stmt in tree.body:
@@ -447,7 +478,7 @@ class Unparser:
         self.write("'''")
 
     def _Name(self, t):
-        self.write(t.id)
+        self.write(t.id or self.generate_id[id(t)])
 
     def _NameConstant(self, t):
         self.write(repr(t.value))

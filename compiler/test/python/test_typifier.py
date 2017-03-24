@@ -71,9 +71,11 @@ def test_num_convert():
 
 def main{args: List[str] -> int}(args: List[str]) -> int:
     x{int} = 10{int}
-    x{int} = 4.5{float}.__int__{self: float -> int}()
+    <genid1>{int} = 4.5{float}.__int__{self: float -> int}()
+    x{int} = <genid1>{int}
     y{float} = 9.3{float}
-    y{float} = 6{int} .__float__{self: int -> float}()
+    <genid2>{float} = 6{int} .__float__{self: int -> float}()
+    y{float} = <genid2>{float}
     return 0{int}
 """, 0)
 
@@ -155,7 +157,8 @@ def main(args: List[str]) -> int:
 """
 
 def funcint{n: int -> bool}(n: int) -> bool:
-    return n{int}.__lt__{self: int, n: int -> bool}(10{int})
+    <genid1>{bool} = n{int}.__lt__{self: int, n: int -> bool}(10{int})
+    return <genid1>{bool}
 
 def funcfloat{f: float -> int}(f: float) -> int:
     return 3{int}
@@ -163,7 +166,8 @@ def funcfloat{f: float -> int}(f: float) -> int:
 def main{args: List[str] -> int}(args: List[str]) -> int:
     x{bool} = funcint{n: int -> bool}(3{int})
     y{int} = funcfloat{f: float -> int}(3.5{float})
-    z{bool} = funcint{n: int -> bool}(funcfloat{f: float -> int}(3.14{float}))
+    <genid2>{int} = funcfloat{f: float -> int}(3.14{float})
+    z{bool} = funcint{n: int -> bool}(<genid2>{int})
     return 0{int}
 """, 0)
 
@@ -186,14 +190,17 @@ def main(args: List[str]) -> int:
 """
 
 def funcint{n: int -> bool}(n: int) -> bool:
-    return n{int}.__lt__{self: int, n: int -> bool}(10{int})
+    <genid1>{bool} = n{int}.__lt__{self: int, n: int -> bool}(10{int})
+    return <genid1>{bool}
 
 def funcfloat{f: float -> int}(f: float) -> int:
     return 3{int}
 
 def main{args: List[str] -> int}(args: List[str]) -> int:
-    x{bool} = funcint{n: int -> bool}(3.5{float}.__int__{self: float -> int}())
-    y{int} = funcfloat{f: float -> int}(3{int} .__float__{self: int -> float}())
+    <genid2>{int} = 3.5{float}.__int__{self: float -> int}()
+    x{bool} = funcint{n: int -> bool}(<genid2>{int})
+    <genid3>{float} = 3{int} .__float__{self: int -> float}()
+    y{int} = funcfloat{f: float -> int}(<genid3>{float})
     return 0{int}
 """, 0)
 
@@ -232,10 +239,70 @@ def main(args: List[str]) -> int:
 """
 
 def funcint{n: int -> float}(n: int) -> float:
-    return n{int}.__float__{self: int -> float}()
+    <genid1>{float} = n{int}.__float__{self: int -> float}()
+    return <genid1>{float}
 
 def main{args: List[str] -> int}(args: List[str]) -> int:
     x{float} = funcint{n: int -> float}(3{int})
+    return 0{int}
+""", 0)
+
+
+def test_if_convert():
+    assert_typify(
+"""def main(args: List[str]) -> int:
+    x = 10
+    if x:
+        x = 2
+    return 0
+""",
+"""
+
+def main{args: List[str] -> int}(args: List[str]) -> int:
+    x{int} = 10{int}
+    <genid1>{bool} = x{int}.__bool__{self: int -> bool}()
+    if <genid1>{bool}:
+        x{int} = 2{int}
+    return 0{int}
+""", 0)
+
+
+def test_while_convert():
+    assert_typify(
+"""def main(args: List[str]) -> int:
+    x = 10
+    while x:
+        x -= 1
+    return 0
+""",
+"""
+
+def main{args: List[str] -> int}(args: List[str]) -> int:
+    x{int} = 10{int}
+    <genid1>: <genid2>{bool} = x{int}.__bool__{self: int -> bool}()
+    if <genid2>{bool}:
+        x{int} = x{int}.__sub__{self: int, n: int -> int}(1{int})
+        goto <genid1>
+    return 0{int}
+""", 0)
+
+
+def test_if_nested():
+    assert_typify(
+"""def main(args: List[str]) -> int:
+    x = 10
+    if 4 < (x / 3):
+        x -= 1
+    return 0
+""",
+"""
+
+def main{args: List[str] -> int}(args: List[str]) -> int:
+    x{int} = 10{int}
+    <genid1>{int} = x{int}.__div__{self: int, n: int -> int}(3{int})
+    <genid2>{bool} = 4{int} .__lt__{self: int, n: int -> bool}(<genid1>{int})
+    if <genid2>{bool}:
+        x{int} = x{int}.__sub__{self: int, n: int -> int}(1{int})
     return 0{int}
 """, 0)
 
@@ -268,19 +335,28 @@ def main(args: List[str]) -> int:
 
 def isprime{n: int -> bool}(n: int) -> bool:
     d{int} = 2{int}
-    if n{int}.__lt__{self: int, n: int -> bool}(4{int}):
+    <genid1>{bool} = n{int}.__lt__{self: int, n: int -> bool}(4{int})
+    if <genid1>{bool}:
         return True{bool}
-    while d{int}.__lt__{self: int, n: int -> bool}(n{int}.__div__{self: int, n: int -> int}(2{int})):
-        if n{int}.__mod__{self: int, n: int -> int}(d{int}).__eq__{self: int, n: int -> bool}(0{int}):
+    <genid2>: <genid3>{int} = n{int}.__div__{self: int, n: int -> int}(2{int})
+    <genid4>{bool} = d{int}.__lt__{self: int, n: int -> bool}(<genid3>{int})
+    if <genid4>{bool}:
+        <genid5>{int} = n{int}.__mod__{self: int, n: int -> int}(d{int})
+        <genid6>{bool} = <genid5>{int}.__eq__{self: int, n: int -> bool}(0{int})
+        if <genid6>{bool}:
             return False{bool}
         d{int} = d{int}.__add__{self: int, n: int -> int}(1{int})
+        goto <genid2>
     return True{bool}
 
 def print_primes_from{start: int, end: int -> }(start: int, end: int):
-    while start{int}.__le__{self: int, n: int -> bool}(end{int}):
-        if isprime{n: int -> bool}(start{int}):
+    <genid7>: <genid8>{bool} = start{int}.__le__{self: int, n: int -> bool}(end{int})
+    if <genid8>{bool}:
+        <genid9>{bool} = isprime{n: int -> bool}(start{int})
+        if <genid9>{bool}:
             print{s: int -> }(start{int})
         start{int} = start{int}.__add__{self: int, n: int -> int}(1{int})
+        goto <genid7>
 
 def main{args: List[str] -> int}(args: List[str]) -> int:
     print_primes_from{start: int, end: int -> }(1{int}, 100{int})
