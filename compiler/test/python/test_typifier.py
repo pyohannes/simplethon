@@ -307,6 +307,33 @@ def main{args: List[str] -> int}(args: List[str]) -> int:
 """, 0)
 
 
+def test_free():
+    assert_typify(
+"""def main(args: List[str]) -> int:
+    x = 10
+    y = 3.4
+    z = True
+    free(x)
+    free(y)
+    free(z)
+    return 0
+""",
+"""
+
+def main{args: List[str] -> int}(args: List[str]) -> int:
+    x{int} = 10{int}
+    y{float} = 3.4{float}
+    z{bool} = True{bool}
+    <genid1>{craw} = x{int}.__craw__{self: int -> craw}()
+    free{obj: craw -> }(<genid1>{craw})
+    <genid2>{craw} = y{float}.__craw__{self: float -> craw}()
+    free{obj: craw -> }(<genid2>{craw})
+    <genid3>{craw} = z{bool}.__craw__{self: bool -> craw}()
+    free{obj: craw -> }(<genid3>{craw})
+    return 0{int}
+""", 0)
+
+
 def test_primes_example():
     assert_typify(
 """def isprime(n: int) -> bool:

@@ -12,11 +12,21 @@ class Type(object):
     def __ne__(self, o):
         return not self == o
 
+    def populate(self):
+        self.members = dict(
+                __craw__=Function(collections.OrderedDict(self=self),
+                                craw))
+
+
+class CRaw(Type):
+    name = 'craw'
+
 
 class Num(Type):
 
     def populate(self):
-        self.members = dict(
+        super(Num, self).populate()
+        self.members.update(dict(
                 __lt__=Function(collections.OrderedDict(self=self, n=self),
                                 bool_),
                 __gt__=Function(collections.OrderedDict(self=self, n=self),
@@ -44,7 +54,7 @@ class Num(Type):
                 __int__=Function(collections.OrderedDict(self=self),
                                 int_),
                 __float__=Function(collections.OrderedDict(self=self),
-                                float_))
+                                float_)))
 
 
 class Int(Num):
@@ -59,11 +69,12 @@ class Bool(Type):
     name = 'bool'
 
     def populate(self):
-        self.members = dict(
+        super(Bool, self).populate()
+        self.members.update(dict(
                 __int__=Function(collections.OrderedDict(self=self),
                                 int_),
                 __eq__=Function(collections.OrderedDict(self=self, b=self),
-                                bool_))
+                                bool_)))
 
 
 class Custom(Type):
@@ -105,6 +116,7 @@ class Function(Type):
 int_ = Int()
 float_ = Float()
 bool_ = Bool()
+craw = CRaw()
 
 for t in (int_, float_, bool_):
     t.populate()

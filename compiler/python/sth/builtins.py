@@ -15,4 +15,16 @@ class Print(object):
                               None)
 
 
-__builtins__ = [ Print() ]
+class Free(object):
+
+    def __init__(self):
+        self.name = ast.Name()
+        self.name.id = 'free'
+        self.name.tp = self.type()
+
+    def type(self):
+        return types.Function(collections.OrderedDict(obj=types.craw),
+                              None)
+
+
+__builtins__ = [ Print(), Free() ]
