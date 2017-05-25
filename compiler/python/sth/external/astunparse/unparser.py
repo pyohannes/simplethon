@@ -90,7 +90,11 @@ class Unparser:
                 if isinstance(tree, i):
                     break
             else:
-                self.write('{%s}' % tree.tp)
+                if hasattr(tree.tp, 'args'):
+                    # duck typing: types.Function
+                    self._FunctionType(tree.tp)
+                else:
+                    self.write('{%s}' % tree.tp)
 
 
     ############### Unparsing methods ######################
@@ -345,15 +349,24 @@ class Unparser:
         self.dispatch(t.body)
         self.leave()
 
+    def _FunctionType(self, t):
+        args = []
+        for n, v in t.args.items():
+            if isinstance(n, ast.Name):
+                n = n.id or self.generate_id[id(n)]
+            args.append('%s: %s' % (n, v))
+        rets = t.returns or ''
+        self.write('{%s -> %s}' % (', '.join(args), rets))
+
     def _generic_FunctionDef(self, t, async=False):
         self.write("\n")
         for deco in t.decorator_list:
             self.fill("@")
             self.dispatch(deco)
-        typedef = ''
+        self.fill(("async " if async else "") + "def " + t.name)
         if hasattr(t, 'tp'):
-            typedef = '{%s}' % str(t.tp)
-        self.fill(("async " if async else "") + "def " + t.name + typedef + "(")
+            self._FunctionType(t.tp)
+        self.write("(")
         self.dispatch(t.args)
         self.write(")")
         if getattr(t, "returns", False):
@@ -676,7 +689,10 @@ class Unparser:
 
     # argument
     def _arg(self, t):
-        self.write(t.arg)
+        if isinstance(t.arg, ast.Name):
+            self._Name(t.arg)
+        else:
+            self.write(t.arg)
         if t.annotation:
             self.write(": ")
             self.dispatch(t.annotation)

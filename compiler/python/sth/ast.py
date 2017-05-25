@@ -1,6 +1,7 @@
 ####+
 import ast
 from ast import *
+from _ast import arg
 
 import sth.external.astunparse
 
@@ -18,9 +19,15 @@ def flatten(l):
 class GotoLabel():
     _fields = ('name',)
 
+    def __init__(self, name=None):
+        self.name = name
+
 
 class Goto():
     _fields = ('name',)
+
+    def __init__(self, name=None):
+        self.name = name
 
 
 class RecursiveNodeVisitor(NodeVisitor):
@@ -124,6 +131,18 @@ class RecursiveNodeVisitor(NodeVisitor):
         goto.name = name
         self.copy_source_attrs(name, goto)
         return goto
+
+    def make_attr(self, value, *attrs, slice=None):
+        for a in attrs:
+            value = ast.Attribute(attr=a, value=value)
+        if slice:
+            value = ast.Subscript(value=value, slice=slice)
+        return value
+
+    def make_assign(self, targets, value):
+        if not isinstance(targets, list):
+            targets = [ targets ]
+        return ast.Assign(targets=targets, value=value)
 
     def copy_source_attrs(self, src, dsts):
         try:

@@ -107,11 +107,6 @@ class Function(Type):
         self.args = args
         self.returns = returns
 
-    def __str__(self):
-        args = [ '%s: %s' % (n, v) for n, v in self.args.items() ]
-        rets = self.returns or ''
-        return '%s -> %s' % (', '.join(args), rets)
-
 
 int_ = Int()
 float_ = Float()
