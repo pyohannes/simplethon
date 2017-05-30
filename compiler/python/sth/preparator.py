@@ -17,6 +17,7 @@ class InitializeConstants(ast.RecursiveNodeVisitor):
         name = self.make_anonym_assign(call)
         name.tp = node.tp
         attr = self.make_attr(name, 'value')
+        attr.tp = node.tp
         ass = self.make_assign(attr, value)
         self.add_in_parent_stmt_list(ass)
         self.replace_in_parent(node, name)

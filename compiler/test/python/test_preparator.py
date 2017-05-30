@@ -24,7 +24,7 @@ def main{args: List[str] -> int}(<genid1>: SthStatus) -> int:
     <genid3>{int} = <genid1>{SthStatus}.current_frame.return_values[0]
     if (sth_frame_free(<genid1>{SthStatus}) != STH_OK{SthRet}):
         goto <genid2>
-    <genid3>{int}.value = 0{int}
+    <genid3>{int}.value{int} = 0{int}
     <genid1>{SthStatus}.current_frame.return_values[0] = <genid3>{int}
     goto <genid2>
     <genid2>: return <genid1>{SthStatus}.status
@@ -52,7 +52,7 @@ def add1{n: int -> int}(<genid1>: SthStatus) -> int:
     <genid3>{int} = <genid1>{SthStatus}.current_frame.return_values[0]
     if (sth_frame_free(<genid1>{SthStatus}) != STH_OK{SthRet}):
         goto <genid2>
-    <genid3>{int}.value = 1{int}
+    <genid3>{int}.value{int} = 1{int}
     if (sth_frame_new(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
         goto <genid2>
     <genid1>{SthStatus}.current_frame.arg_values[0] = n{int}
@@ -75,7 +75,7 @@ def main{args: List[str] -> int}(<genid5>: SthStatus) -> int:
     <genid7>{int} = <genid5>{SthStatus}.current_frame.return_values[0]
     if (sth_frame_free(<genid5>{SthStatus}) != STH_OK{SthRet}):
         goto <genid6>
-    <genid7>{int}.value = 9{int}
+    <genid7>{int}.value{int} = 9{int}
     if (sth_frame_new(<genid5>{SthStatus}, 1, 1) != STH_OK{SthRet}):
         goto <genid6>
     <genid5>{SthStatus}.current_frame.arg_values[0] = <genid7>{int}
@@ -125,7 +125,7 @@ def isprime{n: int -> bool}(<genid1>: SthStatus) -> bool:
     <genid3>{int} = <genid1>{SthStatus}.current_frame.return_values[0]
     if (sth_frame_free(<genid1>{SthStatus}) != STH_OK{SthRet}):
         goto <genid2>
-    <genid3>{int}.value = 2{int}
+    <genid3>{int}.value{int} = 2{int}
     d{int} = <genid3>{int}
     if (sth_frame_new(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
         goto <genid2>
@@ -134,7 +134,7 @@ def isprime{n: int -> bool}(<genid1>: SthStatus) -> bool:
     <genid4>{int} = <genid1>{SthStatus}.current_frame.return_values[0]
     if (sth_frame_free(<genid1>{SthStatus}) != STH_OK{SthRet}):
         goto <genid2>
-    <genid4>{int}.value = 4{int}
+    <genid4>{int}.value{int} = 4{int}
     if (sth_frame_new(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
         goto <genid2>
     <genid1>{SthStatus}.current_frame.arg_values[0] = n{int}
@@ -152,7 +152,7 @@ def isprime{n: int -> bool}(<genid1>: SthStatus) -> bool:
         <genid6>{bool} = <genid1>{SthStatus}.current_frame.return_values[0]
         if (sth_frame_free(<genid1>{SthStatus}) != STH_OK{SthRet}):
             goto <genid2>
-        <genid6>{bool}.value = 1
+        <genid6>{bool}.value{bool} = 1
         <genid1>{SthStatus}.current_frame.return_values[0] = <genid6>{bool}
         goto <genid2>
     <genid7>: if (sth_frame_new(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
@@ -162,7 +162,7 @@ def isprime{n: int -> bool}(<genid1>: SthStatus) -> bool:
     <genid8>{int} = <genid1>{SthStatus}.current_frame.return_values[0]
     if (sth_frame_free(<genid1>{SthStatus}) != STH_OK{SthRet}):
         goto <genid2>
-    <genid8>{int}.value = 2{int}
+    <genid8>{int}.value{int} = 2{int}
     if (sth_frame_new(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
         goto <genid2>
     <genid1>{SthStatus}.current_frame.arg_values[0] = n{int}
@@ -198,7 +198,7 @@ def isprime{n: int -> bool}(<genid1>: SthStatus) -> bool:
         <genid12>{int} = <genid1>{SthStatus}.current_frame.return_values[0]
         if (sth_frame_free(<genid1>{SthStatus}) != STH_OK{SthRet}):
             goto <genid2>
-        <genid12>{int}.value = 0{int}
+        <genid12>{int}.value{int} = 0{int}
         if (sth_frame_new(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
             goto <genid2>
         <genid1>{SthStatus}.current_frame.arg_values[0] = <genid11>{int}
@@ -216,7 +216,7 @@ def isprime{n: int -> bool}(<genid1>: SthStatus) -> bool:
             <genid14>{bool} = <genid1>{SthStatus}.current_frame.return_values[0]
             if (sth_frame_free(<genid1>{SthStatus}) != STH_OK{SthRet}):
                 goto <genid2>
-            <genid14>{bool}.value = 0
+            <genid14>{bool}.value{bool} = 0
             <genid1>{SthStatus}.current_frame.return_values[0] = <genid14>{bool}
             goto <genid2>
         if (sth_frame_new(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
@@ -226,7 +226,7 @@ def isprime{n: int -> bool}(<genid1>: SthStatus) -> bool:
         <genid15>{int} = <genid1>{SthStatus}.current_frame.return_values[0]
         if (sth_frame_free(<genid1>{SthStatus}) != STH_OK{SthRet}):
             goto <genid2>
-        <genid15>{int}.value = 1{int}
+        <genid15>{int}.value{int} = 1{int}
         if (sth_frame_new(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
             goto <genid2>
         <genid1>{SthStatus}.current_frame.arg_values[0] = d{int}
@@ -244,7 +244,7 @@ def isprime{n: int -> bool}(<genid1>: SthStatus) -> bool:
     <genid16>{bool} = <genid1>{SthStatus}.current_frame.return_values[0]
     if (sth_frame_free(<genid1>{SthStatus}) != STH_OK{SthRet}):
         goto <genid2>
-    <genid16>{bool}.value = 1
+    <genid16>{bool}.value{bool} = 1
     <genid1>{SthStatus}.current_frame.return_values[0] = <genid16>{bool}
     goto <genid2>
     <genid2>: return <genid1>{SthStatus}.status
@@ -285,7 +285,7 @@ def print_primes_from{start: int, end: int -> }(<genid17>: SthStatus):
         <genid22>{int} = <genid17>{SthStatus}.current_frame.return_values[0]
         if (sth_frame_free(<genid17>{SthStatus}) != STH_OK{SthRet}):
             goto <genid19>
-        <genid22>{int}.value = 1{int}
+        <genid22>{int}.value{int} = 1{int}
         if (sth_frame_new(<genid17>{SthStatus}, 2, 1) != STH_OK{SthRet}):
             goto <genid19>
         <genid17>{SthStatus}.current_frame.arg_values[0] = start{int}
@@ -307,7 +307,7 @@ def main{args: List[str] -> int}(<genid23>: SthStatus) -> int:
     <genid25>{int} = <genid23>{SthStatus}.current_frame.return_values[0]
     if (sth_frame_free(<genid23>{SthStatus}) != STH_OK{SthRet}):
         goto <genid24>
-    <genid25>{int}.value = 1{int}
+    <genid25>{int}.value{int} = 1{int}
     if (sth_frame_new(<genid23>{SthStatus}, 0, 1) != STH_OK{SthRet}):
         goto <genid24>
     if (sth_int_new{ -> int}(<genid23>{SthStatus}) != STH_OK{SthRet}):
@@ -315,7 +315,7 @@ def main{args: List[str] -> int}(<genid23>: SthStatus) -> int:
     <genid26>{int} = <genid23>{SthStatus}.current_frame.return_values[0]
     if (sth_frame_free(<genid23>{SthStatus}) != STH_OK{SthRet}):
         goto <genid24>
-    <genid26>{int}.value = 100{int}
+    <genid26>{int}.value{int} = 100{int}
     if (sth_frame_new(<genid23>{SthStatus}, 2, 0) != STH_OK{SthRet}):
         goto <genid24>
     <genid23>{SthStatus}.current_frame.arg_values[0] = <genid25>{int}
@@ -331,7 +331,7 @@ def main{args: List[str] -> int}(<genid23>: SthStatus) -> int:
     <genid27>{int} = <genid23>{SthStatus}.current_frame.return_values[0]
     if (sth_frame_free(<genid23>{SthStatus}) != STH_OK{SthRet}):
         goto <genid24>
-    <genid27>{int}.value = 0{int}
+    <genid27>{int}.value{int} = 0{int}
     <genid23>{SthStatus}.current_frame.return_values[0] = <genid27>{int}
     goto <genid24>
     <genid24>: return <genid23>{SthStatus}.status

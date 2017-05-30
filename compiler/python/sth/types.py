@@ -6,6 +6,9 @@ class Type(object):
     def __str__(self):
         return self.name
 
+    def cstr(self):
+        return 'Sth%s%s' % (self.name[0].upper(), self.name[1:])
+
     def __eq__(self, o):
         return str(self) == str(o)
 
