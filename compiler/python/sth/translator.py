@@ -22,13 +22,17 @@ class Translator(ast.RecursiveNodeVisitor):
     def _initialize(self, module):
         self._var_id_count = 0
         self._compound_scopes = dict()
+        self._main_function = False
         name_ex = Translator.NameExtractor()
         name_ex.visit(module)
         self._reserved_names = name_ex.names
 
     def translate(self, module):
         self._initialize(module)
-        return c_ast.FileAST([ self.visit(n) for n in module.body ])
+        body = [ self.visit(n) for n in module.body ]
+        if self._main_function:
+            body.append(self.create_main_function())
+        return c_ast.FileAST(body)
 
     def c_make_unique_var_name(self, name):
         if not name.id:
@@ -41,25 +45,28 @@ class Translator(ast.RecursiveNodeVisitor):
 
         return name.id 
 
-    def c_make_compound(self, nodes):
+    def c_make_compound_list(self, nodes):
         if not isinstance(nodes, list):
             nodes = [ nodes ]
-        return c_ast.Compound(block_items=[ self.visit(n) for n in nodes ])
+        return [ self.visit(n) for n in nodes ]
+
+    def c_make_compound(self, items):
+        return c_ast.Compound(block_items=items)
 
     def c_make_type_id(self, name, declname=None):
-        if name.strip().endswith('*'):
-            name = name.strip('*')
-            return self.c_make_ptr_decl(declname, name)
-        else:
-            return c_ast.IdentifierType(names=[ name ])
+        return c_ast.IdentifierType(names=[ name ])
 
     def c_make_type_decl(self, node, tp):
-        if isinstance(tp, str):
-            tp = self.c_make_type_id(tp)
         if isinstance(node, str):
             declname = node
         else:
             declname = self.c_make_unique_var_name(node)
+        if isinstance(tp, str):
+            if tp.strip().endswith('*'):
+                tpname = tp.strip(' ')[:-1]
+                return self.c_make_ptr_decl(declname, tpname)
+            else:
+                tp = self.c_make_type_id(tp, declname)
         return c_ast.TypeDecl(declname=declname, quals=[], type=tp)
 
     def c_make_ptr_decl(self, node, tp):
@@ -68,7 +75,7 @@ class Translator(ast.RecursiveNodeVisitor):
     def c_make_func_arg(self, node, tp):
         declname = self.c_make_unique_var_name(node)
         if isinstance(tp, str):
-            tp = self.c_make_type_id(tp, declname)
+            tp = self.c_make_type_decl(declname, tp)
         return c_ast.Decl(name=declname, quals=[], storage=[], funcspec=[],
                 init=None, bitsize=None, type=tp)
 
@@ -127,13 +134,19 @@ class Translator(ast.RecursiveNodeVisitor):
     def c_make_cast(self, tp, expr):
         return c_ast.Cast(to_type=tp, expr=expr)
 
+    def c_make_addrof(self, expr):
+        return c_ast.UnaryOp(op='&', expr=expr)
+
     def visit_functiondef(self, node):
-        name = 'sth_main' if node.name == 'main' else node.name
+        name = node.name
+        if node.name  == 'main':
+            name = 'sth_main'
+            self._main_function = True
         fargs = [ self.c_make_func_arg(node.args.args[0].arg, 'SthStatus*') ]
         fdecl = self.c_make_func_decl(name, 'SthRet', fargs)
 
         self._compound_scopes.clear()
-        fbody = self.c_make_compound(node.body)
+        fbody = self.c_make_compound(self.c_make_compound_list(node.body))
 
         for k, v in self._compound_scopes.items():
            tpstr = self.c_make_ctype_name(v.tp)
@@ -167,9 +180,10 @@ class Translator(ast.RecursiveNodeVisitor):
 
     def visit_if(self, node):
         test = self.visit(node.test)
-        body = self.c_make_compound(node.body)
+        body = self.c_make_compound(self.c_make_compound_list(node.body))
         if node.orelse:
-            orelse = self.c_make_compound(node.orelse)
+            orelse = self.c_make_compound(
+                    self.c_make_compound_list(node.orelse))
         else:
             orelse = None
         return self.c_make_if(test, body, orelse)
@@ -224,6 +238,193 @@ class Translator(ast.RecursiveNodeVisitor):
         slice = self.visit(node.slice)
         return self.c_make_subscript(value, slice)
 
+    def create_main_function(self):
+        fargs = [
+                self.c_make_func_arg(ast.Name(id='argc'), 'int'),
+                self.c_make_func_arg(ast.Name(id='argv'), 'char**') ]
+        fdecl = self.c_make_func_decl('main', 'int', fargs)
+
+        body = []
+
+        # int ret;
+        # SthStatus *st;
+        # SthList *args;
+        retname = ast.Name(id=None)
+        staname = ast.Name(id=None)
+        argname = ast.Name(id=None)
+        sthretname = ast.Name(id=None)
+        body.extend([
+            self.c_make_func_arg(retname, 'int'),
+            self.c_make_func_arg(staname, 'SthStatus*'),
+            self.c_make_func_arg(argname, 'SthList*'),
+            self.c_make_func_arg(sthretname, 'SthInt*'),
+            self.c_make_assign(self.c_make_id(retname.id),
+                self.c_make_constant('0', 'int')),
+            self.c_make_assign(self.c_make_id(staname.id),
+                self.c_make_constant('0', 'int')),
+            self.c_make_assign(self.c_make_id(argname.id),
+                self.c_make_constant('0', 'int')),
+            self.c_make_assign(self.c_make_id(sthretname.id),
+                self.c_make_constant('0', 'int')) ])
+
+        # if (sth_status_new(&st) != STH_OK) {
+        #   goto stherror;
+        # }
+        gotoname = ast.Name(id=None)
+        gotolabel = self.c_make_unique_var_name(gotoname)
+        body.append(
+                self.c_make_if(
+                    self.c_make_binop(
+                        '!=', 
+                        self.c_make_call(
+                            self.c_make_id('sth_status_new'),
+                            self.c_make_addrof(self.c_make_id(staname.id))),
+                        self.c_make_id('STH_OK')),
+                    self.c_make_compound([ self.c_make_goto(gotoname) ]), 
+                    None))
+
+        # if (sth_frame_new(&st, 1, 1) != STH_OK) {
+        #   goto stherror;
+        # }
+        body.append(
+                self.c_make_if(
+                    self.c_make_binop(
+                        '!=', 
+                        self.c_make_call(
+                            self.c_make_id('sth_frame_new'),
+                            self.c_make_expr_list([
+                                self.c_make_id(staname.id),
+                                self.c_make_constant('1', 'int'),
+                                self.c_make_constant('1', 'int') ])),
+                        self.c_make_id('STH_OK')),
+                    self.c_make_compound([ self.c_make_goto(gotoname) ]), 
+                    None))
+
+        # st->current_frame->arg_values[0] = (void* ) _6; 
+        body.append(
+                self.c_make_assign(
+                    self.c_make_subscript(
+                        self.c_make_struct_ref(
+                            self.c_make_struct_ref(
+                                self.c_make_id(staname.id),
+                                'current_frame'),
+                            'arg_values'),
+                        self.c_make_constant('0', 'int')),
+                    self.c_make_cast(
+                        self.c_make_type_id('void*', ''),
+                        self.c_make_id(argname.id))))
+
+        # if (sth_main(st) != STH_OK) {
+        #   goto stherror;
+        # }
+        body.append(
+                self.c_make_if(
+                    self.c_make_binop(
+                        '!=', 
+                        self.c_make_call(
+                            self.c_make_id('sth_main'),
+                            self.c_make_id(staname.id)),
+                        self.c_make_id('STH_OK')),
+                    self.c_make_compound([ self.c_make_goto(gotoname) ]), 
+                    None))
+        
+        # SthInt *sthret = _5->current_frame->return_values[0];
+        body.append(
+                self.c_make_assign(
+                    self.c_make_id(sthretname.id),
+                    self.c_make_cast(
+                        self.c_make_type_id('SthInt*', ''),
+                        self.c_make_subscript(
+                            self.c_make_struct_ref(
+                                self.c_make_struct_ref(
+                                    self.c_make_id(staname.id),
+                                    'current_frame'),
+                                'return_values'),
+                            self.c_make_constant('0', 'int')))))
+
+        # _4 = sthret->value;
+        body.append(
+                self.c_make_assign(
+                    self.c_make_id(retname.id),
+                    self.c_make_struct_ref(
+                        self.c_make_id(sthretname.id),
+                        'value')))
+
+        # sth_int_free(_7);
+        body.append(
+                self.c_make_call(
+                    self.c_make_id('sth_int_free'),
+                    self.c_make_id(sthretname.id)))
+
+        # if (sth_frame_free(st) != STH_OK) {
+        #   goto stherror;
+        # }
+        body.append(
+                self.c_make_if(
+                    self.c_make_binop(
+                        '!=', 
+                        self.c_make_call(
+                            self.c_make_id('sth_frame_free'),
+                            self.c_make_id(staname.id)),
+                        self.c_make_id('STH_OK')),
+                    self.c_make_compound([ self.c_make_goto(gotoname) ]), 
+                    None))
+
+        # sth_status_free(_7);
+        body.append(
+                self.c_make_call(
+                    self.c_make_id('sth_status_free'),
+                    self.c_make_id(staname.id)))
+
+        # return _4;
+        body.append(
+                self.c_make_return(
+                    self.c_make_id(retname.id)))
+
+        # _8:
+        body.append(self.c_make_label(gotoname))
+
+        # fprintf(stderr, "Uncaught exception");
+        body.append(
+                self.c_make_call(
+                    self.c_make_id('fprintf'),
+                    self.c_make_expr_list([
+                        self.c_make_id('stderr'),
+                        self.c_make_constant('"Uncaught exception"',
+                            'char*')])))
+
+        # if (st) {
+        #   fprintf(stderr, ": %d", st->status);
+        # }
+        body.append(
+                self.c_make_if(
+                    self.c_make_id(staname.id),
+                    self.c_make_compound([ 
+                        self.c_make_call(
+                            self.c_make_id('fprintf'),
+                            self.c_make_expr_list([
+                                self.c_make_id('stderr'),
+                                self.c_make_constant('": %d\\n"', 'char*'),
+                                self.c_make_struct_ref(
+                                    self.c_make_id(staname.id),
+                                    'status')])),
+                        self.c_make_return(         
+                            self.c_make_struct_ref(
+                                self.c_make_id(staname.id),
+                                'status'))]),
+                    self.c_make_compound([ 
+                        self.c_make_call(
+                            self.c_make_id('fprintf'),
+                            self.c_make_expr_list([
+                                self.c_make_id('stderr'),
+                                self.c_make_constant('"\\n"', 'char*')])),
+                        self.c_make_return(
+                            self.c_make_constant('-1', 'int'))])))
+
+
+        fbody = self.c_make_compound(body)
+
+        return self.c_make_func_def(fdecl, fbody)
 
 
 def translate(tree):
