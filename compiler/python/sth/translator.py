@@ -239,6 +239,46 @@ class Translator(ast.RecursiveNodeVisitor):
         return self.c_make_subscript(value, slice)
 
     def create_main_function(self):
+
+        def _call_sth_frame_new(argc, retc):
+            return self.c_make_if(
+                self.c_make_binop(
+                    '!=', 
+                    self.c_make_call(
+                        self.c_make_id('sth_frame_new'),
+                        self.c_make_expr_list([
+                            self.c_make_id(staname.id),
+                            self.c_make_constant(str(argc), 'int'),
+                            self.c_make_constant(str(retc), 'int') ])),
+                    self.c_make_id('STH_OK')),
+                self.c_make_compound([ self.c_make_goto(gotoname) ]), 
+                None)
+
+        def _call_sth_onearg_call(name):
+            return self.c_make_if(
+                self.c_make_binop(
+                    '!=', 
+                    self.c_make_call(
+                        self.c_make_id(name),
+                        self.c_make_id(staname.id)),
+                    self.c_make_id('STH_OK')),
+                self.c_make_compound([ self.c_make_goto(gotoname) ]), 
+                None)
+
+        def _arg_value_0_set(value):
+            return self.c_make_assign(
+                    self.c_make_subscript(
+                        self.c_make_struct_ref(
+                            self.c_make_struct_ref(
+                                self.c_make_id(staname.id),
+                                'current_frame'),
+                            'arg_values'),
+                        self.c_make_constant('0', 'int')),
+                    self.c_make_cast(
+                        self.c_make_type_id('void*', ''),
+                        value))
+ 
+        # int main(int argc, char **argv) {
         fargs = [
                 self.c_make_func_arg(ast.Name(id='argc'), 'int'),
                 self.c_make_func_arg(ast.Name(id='argv'), 'char**') ]
@@ -283,50 +323,18 @@ class Translator(ast.RecursiveNodeVisitor):
                     self.c_make_compound([ self.c_make_goto(gotoname) ]), 
                     None))
 
-        # if (sth_frame_new(&st, 1, 1) != STH_OK) {
+        # if (sth_frame_new(st, 1, 1) != STH_OK) {
         #   goto stherror;
         # }
-        body.append(
-                self.c_make_if(
-                    self.c_make_binop(
-                        '!=', 
-                        self.c_make_call(
-                            self.c_make_id('sth_frame_new'),
-                            self.c_make_expr_list([
-                                self.c_make_id(staname.id),
-                                self.c_make_constant('1', 'int'),
-                                self.c_make_constant('1', 'int') ])),
-                        self.c_make_id('STH_OK')),
-                    self.c_make_compound([ self.c_make_goto(gotoname) ]), 
-                    None))
+        body.append(_call_sth_frame_new(1, 1))
 
         # st->current_frame->arg_values[0] = (void* ) _6; 
-        body.append(
-                self.c_make_assign(
-                    self.c_make_subscript(
-                        self.c_make_struct_ref(
-                            self.c_make_struct_ref(
-                                self.c_make_id(staname.id),
-                                'current_frame'),
-                            'arg_values'),
-                        self.c_make_constant('0', 'int')),
-                    self.c_make_cast(
-                        self.c_make_type_id('void*', ''),
-                        self.c_make_id(argname.id))))
+        body.append(_arg_value_0_set(self.c_make_id(argname.id)))
 
         # if (sth_main(st) != STH_OK) {
         #   goto stherror;
         # }
-        body.append(
-                self.c_make_if(
-                    self.c_make_binop(
-                        '!=', 
-                        self.c_make_call(
-                            self.c_make_id('sth_main'),
-                            self.c_make_id(staname.id)),
-                        self.c_make_id('STH_OK')),
-                    self.c_make_compound([ self.c_make_goto(gotoname) ]), 
-                    None))
+        body.append(_call_sth_onearg_call('sth_main'))
         
         # SthInt *sthret = _5->current_frame->return_values[0];
         body.append(
@@ -350,25 +358,28 @@ class Translator(ast.RecursiveNodeVisitor):
                         self.c_make_id(sthretname.id),
                         'value')))
 
-        # sth_int_free(_7);
-        body.append(
-                self.c_make_call(
-                    self.c_make_id('sth_int_free'),
-                    self.c_make_id(sthretname.id)))
+        # if (sth_frame_free(st) != STH_OK) {
+        #   goto stherror;
+        # }
+        body.append(_call_sth_onearg_call('sth_frame_free'))
+
+        # if (sth_frame_new(&st, 1, 0) != STH_OK) {
+        #   goto stherror;
+        # }
+        body.append(_call_sth_frame_new(1, 0))
+
+        # st->current_frame->arg_values[0] = (void* ) _7; 
+        body.append(_arg_value_0_set(self.c_make_id(sthretname.id)))
+
+        # if (sth_int_free(st) != STH_OK) {
+        #   goto stherror;
+        # }
+        body.append(_call_sth_onearg_call('sth_int_free'))
 
         # if (sth_frame_free(st) != STH_OK) {
         #   goto stherror;
         # }
-        body.append(
-                self.c_make_if(
-                    self.c_make_binop(
-                        '!=', 
-                        self.c_make_call(
-                            self.c_make_id('sth_frame_free'),
-                            self.c_make_id(staname.id)),
-                        self.c_make_id('STH_OK')),
-                    self.c_make_compound([ self.c_make_goto(gotoname) ]), 
-                    None))
+        body.append(_call_sth_onearg_call('sth_frame_free'))
 
         # sth_status_free(_7);
         body.append(
@@ -432,5 +443,6 @@ def translate(tree):
 
 
 def unparse(tree):
+    preabmle = """#include "sth/sth.h"\n\n"""
     generator = c_generator.CGenerator()
-    return generator.visit(tree)
+    return preabmle + generator.visit(tree)

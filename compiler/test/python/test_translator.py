@@ -6,6 +6,9 @@ from sth.translator import translate, unparse
 
 
 def assert_translate(src, dst, ret, lastid):
+    header = """#include "sth/sth.h"
+
+"""
     mainfunc = """int main(int argc, char **argv)
 {
   int %(ret)s;
@@ -34,7 +37,22 @@ def assert_translate(src, dst, ret, lastid):
 
   %(sthret)s = (SthInt* ) %(sta)s->current_frame->return_values[0];
   %(ret)s = %(sthret)s->value;
-  sth_int_free(%(sthret)s);
+  if (sth_frame_free(%(sta)s) != STH_OK)
+  {
+    goto %(err)s;
+  }
+
+  if (sth_frame_new(%(sta)s, 1, 0) != STH_OK)
+  {
+    goto %(err)s;
+  }
+
+  %(sta)s->current_frame->arg_values[0] = (void* ) %(sthret)s;
+  if (sth_int_free(%(sta)s) != STH_OK)
+  {
+    goto %(err)s;
+  }
+
   if (sth_frame_free(%(sta)s) != STH_OK)
   {
     goto %(err)s;
@@ -65,8 +83,8 @@ def assert_translate(src, dst, ret, lastid):
         arg='_%d' % (lastid + 3),
         sthret='_%d' % (lastid + 4),
         err='_%d' % (lastid + 5))
-    assert unparse(translate(prepare(typify(simplify(parse(src)))))) == (dst +
-            mainfunc)
+    assert unparse(translate(prepare(typify(simplify(parse(src)))))) == (
+            header + dst + mainfunc)
 
 
 def test_simple():
