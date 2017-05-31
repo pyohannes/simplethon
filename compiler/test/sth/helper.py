@@ -4,7 +4,36 @@ import subprocess
 import sys
 import tempfile
 
-SPY_MAIN = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'sth.py')
+
+STH_MAIN = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
+        'sthc.py')
+
+
+def assert_transpiled_output(inp, out, ret):
+    tmpdir = None
+    try:
+        tmpdir = tempfile.mkdtemp()
+        sthfile = os.path.join(tmpdir, 'input.sth')
+        cfile = os.path.join(tmpdir, 'input.sth.c')
+
+        with open(sthfile, 'w') as f:
+            f.write(inp)
+
+        retcode = subprocess.call([
+            sys.executable,
+            STH_MAIN,
+            '-E',
+            sthfile])
+
+        assert retcode == ret
+        assert os.path.exists(cfile)
+
+        with open(cfile, 'r') as f:
+            assert f.read() == out
+    finally:
+        if tmpdir:
+            shutil.rmtree(tmpdir)
 
 
 def assert_compiled_output(inp, out, ret):

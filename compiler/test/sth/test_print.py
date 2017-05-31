@@ -1,6 +1,8 @@
+import pytest
 from helper import assert_compiled_output
 
 
+@pytest.mark.skipif(True, reason="Sample test")
 def test_hello_world():
     assert_compiled_output(
 """
