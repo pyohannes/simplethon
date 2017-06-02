@@ -15,22 +15,22 @@ def assert_transpiled_output(inp, out, ret):
     try:
         tmpdir = tempfile.mkdtemp()
         sthfile = os.path.join(tmpdir, 'input.sth')
-        cfile = os.path.join(tmpdir, 'input.sth.c')
 
         with open(sthfile, 'w') as f:
             f.write(inp)
 
-        retcode = subprocess.call([
+        p = subprocess.Popen([
             sys.executable,
             STH_MAIN,
             '-E',
-            sthfile])
+            sthfile],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        pout, perr = p.communicate()
 
-        assert retcode == ret
-        assert os.path.exists(cfile)
-
-        with open(cfile, 'r') as f:
-            assert f.read() == out
+        assert p.returncode == ret
+        print('###', out.strip())
+        print('###', pout.decode('utf-8').strip())
+        assert out.strip() == pout.decode('utf-8').strip()
     finally:
         if tmpdir:
             shutil.rmtree(tmpdir)
@@ -41,27 +41,20 @@ def assert_compiled_output(inp, out, ret):
     try:
         tmpdir = tempfile.mkdtemp()
         srcfile = os.path.join(tmpdir, 'input.sth')
-        objfile = os.path.join(tmpdir, 'input.o')
         executable = os.path.join(tmpdir, 'executable')
 
         with open(srcfile, 'w') as f:
             f.write(inp)
     
-        subprocess.call([
+        compileret = subprocess.call([
             sys.executable,
-            SPY_MAIN,
-            'compile',
-            srcfile,
+            STH_MAIN,
             '-o',
-            objfile])
+            executable,
+            srcfile])
 
-        subprocess.call([
-            sys.executable,
-            SPY_MAIN,
-            'link',
-            '-o', executable,
-            objfile])
-    
+        assert compileret == 0
+
         p = subprocess.Popen(
                 [ executable ],
                 stdout=subprocess.PIPE,

@@ -3,6 +3,7 @@
 import argparse
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -71,7 +72,43 @@ def transpile(src_file, dst_dir):
     return dst_file
 
 
-def main():
+def run_cmd(cmd, msg, err_msg_prefix):
+    p = subprocess.Popen(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+    print_msg(msg)
+    print_msg(cmd)
+    out, err = p.communicate()
+    out, err = out.decode('utf-8'), err.decode('utf-8')
+    if p.returncode != 0:
+        raise SthCompilerError("%s: %s" % (err_msg_prefix, err))
+    if out.strip():
+        print_msg(out.strip())
+    if err.strip():
+        print_msg(err.strip())
+
+
+def ccompile(src_file, dst_dir, inc):
+    compilestr = 'gcc -Wall -g -I%(inc)s -o %(out)s -c %(src)s'
+    args = dict(inc=inc, src=src_file, out='%s.o' % src_file)
+    run_cmd(compilestr % args, 
+            "Compiling %(src)s to %(out)s" % args,
+            "Cannot compile C code:")
+    return args['out']
+
+
+def link(objs, output, lib):
+    linkstr = 'gcc -o %(out)s %(objs)s %(lib)s'
+    args = dict(out=output, objs=' '.join(objs), lib=lib)
+    run_cmd(linkstr % args, 
+            "Linking %(objs)s to %(out)s" % args,
+            "Cannot link object files:")
+    return args['out']
+
+
+def main(lib, inc):
     global verbose
 
     parser = command_line_parser()
@@ -83,21 +120,34 @@ def main():
     try:
         if not args.src_files:
             raise SthCompilerError("No source files given")
-    
-        sthsrcs = []
+   
+        # Transpiling
+        csrcs = []
         for src_file in args.src_files:
-            sthsrcs.append(transpile(src_file, tmpdir))
+            csrcs.append(transpile(src_file, tmpdir))
 
         if args.transpile_only:
-            if len(args.src_files) > 1:
-                raise SthCompilerError("Multiple source files given")
-            inputf = args.src_files[0]
-            output = args.output_file
-            if not output:
-                output = inputf + '.c'
-            print_msg('Copying %s to %s' % (sthsrcs[0], output))
-            shutil.copyfile(sthsrcs[0], output)
+            for csrc in csrcs:
+                with open(csrc, 'r') as f:
+                    print(f.read())
             sys.exit(0)
+
+        # Compiling
+        objs = []
+        for csrc in csrcs:
+            objs.append(ccompile(csrc, tmpdir, inc))
+
+        if args.compile_only:
+            for src, obj in zip(args.src_files, objs):
+                target = os.path.splitext(src)[0] + '.o'
+                print_msg('Copying %s to %s' % (obj, target))
+                shutil.copyfile(obj, target)
+            sys.exit(0)
+
+        # Linking
+        output = args.output_file or 'a.out'
+        link(objs, output, lib)
+        sys.exit(0)
 
     except SthCompilerError as e:
         print('Error: %s' %  e)
