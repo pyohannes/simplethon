@@ -111,8 +111,7 @@ class Unparser:
         self.avoid_fill = 1
 
     def _Goto(self, tree):
-        self.fill("goto")
-        self.write(" ")
+        self.write("goto ")
         self.dispatch(tree.name)
 
     def _Module(self, tree):

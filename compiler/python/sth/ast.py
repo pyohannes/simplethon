@@ -130,7 +130,7 @@ class RecursiveNodeVisitor(NodeVisitor):
         goto = Goto()
         goto.name = name
         self.copy_source_attrs(name, goto)
-        return goto
+        return Expr(value=goto)
 
     def make_attr(self, value, *attrs, slice=None):
         for a in attrs:

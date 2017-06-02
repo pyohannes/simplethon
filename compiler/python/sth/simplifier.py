@@ -56,8 +56,7 @@ class ReduceControlStructures(ast.RecursiveNodeVisitor):
             self.continue_used += 1
 
         def _replace_with_goto(self, node, name):
-            jump = ast.Goto()
-            jump.name = name
+            jump = self.make_goto(name)
             self.copy_source_attrs(node, jump)
             self.replace_in_parent(node, jump)
 

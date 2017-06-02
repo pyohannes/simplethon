@@ -24,36 +24,36 @@ def assert_translate(src, dst, ret, lastid):
     goto %(err)s;
   }
 
-  if (sth_frame_new(%(sta)s, 1, 1) != STH_OK)
+  if (sth_status_frame_add(%(sta)s, 1, 1) != STH_OK)
   {
     goto %(err)s;
   }
 
-  %(sta)s->current_frame->arg_values[0] = (void* ) %(arg)s;
+  sth_status_frame_argval_set(%(sta)s, 0, (void* ) %(arg)s);
   if (sth_main(%(sta)s) != STH_OK)
   {
     goto %(err)s;
   }
 
-  %(sthret)s = (SthInt* ) %(sta)s->current_frame->return_values[0];
+  %(sthret)s = (SthInt* ) sth_status_frame_retval_get(%(sta)s, 0);
   %(ret)s = %(sthret)s->value;
-  if (sth_frame_free(%(sta)s) != STH_OK)
+  if (sth_status_frame_remove(%(sta)s) != STH_OK)
   {
     goto %(err)s;
   }
 
-  if (sth_frame_new(%(sta)s, 1, 0) != STH_OK)
+  if (sth_status_frame_add(%(sta)s, 1, 0) != STH_OK)
   {
     goto %(err)s;
   }
 
-  %(sta)s->current_frame->arg_values[0] = (void* ) %(sthret)s;
+  sth_status_frame_argval_set(%(sta)s, 0, (void* ) %(sthret)s);
   if (sth_int_free(%(sta)s) != STH_OK)
   {
     goto %(err)s;
   }
 
-  if (sth_frame_free(%(sta)s) != STH_OK)
+  if (sth_status_frame_remove(%(sta)s) != STH_OK)
   {
     goto %(err)s;
   }
@@ -66,8 +66,8 @@ def assert_translate(src, dst, ret, lastid):
   fprintf(stderr, "Uncaught exception");
   if (%(sta)s)
   {
-    fprintf(stderr, ": %%d\\n", %(sta)s->status);
-    return %(sta)s->status;
+    fprintf(stderr, ": %%d\\n", sth_status_status_get(%(sta)s));
+    return sth_status_status_get(%(sta)s);
   }
   else
   {
@@ -96,8 +96,8 @@ def test_simple():
 {
   SthInt *_3;
   SthList *args;
-  args = (SthList* ) _1->current_frame->arg_values[0];
-  if (sth_frame_new(_1, 0, 1) != STH_OK)
+  args = (SthList* ) sth_status_frame_argval_get(_1, 0);
+  if (sth_status_frame_add(_1, 0, 1) != STH_OK)
   {
     goto _2;
   }
@@ -107,19 +107,19 @@ def test_simple():
     goto _2;
   }
 
-  _3 = (SthInt* ) _1->current_frame->return_values[0];
-  if (sth_frame_free(_1) != STH_OK)
+  _3 = (SthInt* ) sth_status_frame_retval_get(_1, 0);
+  if (sth_status_frame_remove(_1) != STH_OK)
   {
     goto _2;
   }
 
   _3->value = 0;
-  _1->current_frame->return_values[0] = (void* ) _3;
+  sth_status_frame_retval_set(_1, 0, (void* ) _3);
   goto _2;
   _2:
   
 
-  return _1->status;
+  return sth_status_status_get(_1);
 }
 
 """, 0, 3)
@@ -140,8 +140,8 @@ def main(args: List[str]) -> int:
   SthInt *_4;
   SthInt *_3;
   SthInt *n;
-  n = (SthInt* ) _1->current_frame->arg_values[0];
-  if (sth_frame_new(_1, 0, 1) != STH_OK)
+  n = (SthInt* ) sth_status_frame_argval_get(_1, 0);
+  if (sth_status_frame_add(_1, 0, 1) != STH_OK)
   {
     goto _2;
   }
@@ -151,37 +151,37 @@ def main(args: List[str]) -> int:
     goto _2;
   }
 
-  _3 = (SthInt* ) _1->current_frame->return_values[0];
-  if (sth_frame_free(_1) != STH_OK)
+  _3 = (SthInt* ) sth_status_frame_retval_get(_1, 0);
+  if (sth_status_frame_remove(_1) != STH_OK)
   {
     goto _2;
   }
 
   _3->value = 1;
-  if (sth_frame_new(_1, 2, 1) != STH_OK)
+  if (sth_status_frame_add(_1, 2, 1) != STH_OK)
   {
     goto _2;
   }
 
-  _1->current_frame->arg_values[0] = (void* ) n;
-  _1->current_frame->arg_values[1] = (void* ) _3;
+  sth_status_frame_argval_set(_1, 0, (void* ) n);
+  sth_status_frame_argval_set(_1, 1, (void* ) _3);
   if (n->__add__(_1) != STH_OK)
   {
     goto _2;
   }
 
-  _4 = (SthInt* ) _1->current_frame->return_values[0];
-  if (sth_frame_free(_1) != STH_OK)
+  _4 = (SthInt* ) sth_status_frame_retval_get(_1, 0);
+  if (sth_status_frame_remove(_1) != STH_OK)
   {
     goto _2;
   }
 
-  _1->current_frame->return_values[0] = (void* ) _4;
+  sth_status_frame_retval_set(_1, 0, (void* ) _4);
   goto _2;
   _2:
   
 
-  return _1->status;
+  return sth_status_status_get(_1);
 }
 
 SthRet sth_main(SthStatus *_5)
@@ -189,8 +189,8 @@ SthRet sth_main(SthStatus *_5)
   SthInt *x;
   SthInt *_7;
   SthList *args;
-  args = (SthList* ) _5->current_frame->arg_values[0];
-  if (sth_frame_new(_5, 0, 1) != STH_OK)
+  args = (SthList* ) sth_status_frame_argval_get(_5, 0);
+  if (sth_status_frame_add(_5, 0, 1) != STH_OK)
   {
     goto _6;
   }
@@ -200,36 +200,36 @@ SthRet sth_main(SthStatus *_5)
     goto _6;
   }
 
-  _7 = (SthInt* ) _5->current_frame->return_values[0];
-  if (sth_frame_free(_5) != STH_OK)
+  _7 = (SthInt* ) sth_status_frame_retval_get(_5, 0);
+  if (sth_status_frame_remove(_5) != STH_OK)
   {
     goto _6;
   }
 
   _7->value = 9;
-  if (sth_frame_new(_5, 1, 1) != STH_OK)
+  if (sth_status_frame_add(_5, 1, 1) != STH_OK)
   {
     goto _6;
   }
 
-  _5->current_frame->arg_values[0] = (void* ) _7;
+  sth_status_frame_argval_set(_5, 0, (void* ) _7);
   if (add1(_5) != STH_OK)
   {
     goto _6;
   }
 
-  x = (SthInt* ) _5->current_frame->return_values[0];
-  if (sth_frame_free(_5) != STH_OK)
+  x = (SthInt* ) sth_status_frame_retval_get(_5, 0);
+  if (sth_status_frame_remove(_5) != STH_OK)
   {
     goto _6;
   }
 
-  _5->current_frame->return_values[0] = (void* ) x;
+  sth_status_frame_retval_set(_5, 0, (void* ) x);
   goto _6;
   _6:
   
 
-  return _5->status;
+  return sth_status_status_get(_5);
 }
 
 """, 0, 7)
@@ -246,8 +246,8 @@ def test_unique_name():
   SthInt *_1;
   SthInt *_4;
   SthList *args;
-  args = (SthList* ) _2->current_frame->arg_values[0];
-  if (sth_frame_new(_2, 0, 1) != STH_OK)
+  args = (SthList* ) sth_status_frame_argval_get(_2, 0);
+  if (sth_status_frame_add(_2, 0, 1) != STH_OK)
   {
     goto _3;
   }
@@ -257,20 +257,20 @@ def test_unique_name():
     goto _3;
   }
 
-  _4 = (SthInt* ) _2->current_frame->return_values[0];
-  if (sth_frame_free(_2) != STH_OK)
+  _4 = (SthInt* ) sth_status_frame_retval_get(_2, 0);
+  if (sth_status_frame_remove(_2) != STH_OK)
   {
     goto _3;
   }
 
   _4->value = 0;
   _1 = _4;
-  _2->current_frame->return_values[0] = (void* ) _1;
+  sth_status_frame_retval_set(_2, 0, (void* ) _1);
   goto _3;
   _3:
   
 
-  return _2->status;
+  return sth_status_status_get(_2);
 }
 
 """, 0, 4)
