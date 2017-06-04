@@ -31,6 +31,19 @@ class InitializeConstants(ast.RecursiveNodeVisitor):
             self._make_constant_init(node, types.bool_, value)
 
 
+class BoolIfAttrs(ast.RecursiveNodeVisitor):
+
+    def __init__(self):
+        super(BoolIfAttrs, self).__init__(None)
+
+    def visit_if(self, node):
+        if isinstance(node.test, ast.Name):
+            tp = node.test.tp
+            node.test = self.make_attr(node.test, 'value')
+            node.test.tp = tp
+
+
+
 class FunctionArgumentsInStatus(ast.RecursiveNodeVisitor):
 
     def __init__(self):
@@ -153,6 +166,7 @@ class FunctionArgumentsInStatus(ast.RecursiveNodeVisitor):
 
 def prepare(tree):
     for cls in (
+            BoolIfAttrs,
             InitializeConstants,
             FunctionArgumentsInStatus
             ):

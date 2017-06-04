@@ -48,7 +48,16 @@ class Translator(ast.RecursiveNodeVisitor):
     def c_make_compound_list(self, nodes):
         if not isinstance(nodes, list):
             nodes = [ nodes ]
-        return [ self.visit(n) for n in nodes ]
+        # flatten nested compound lists
+        items = []
+        for n in nodes:
+            item = self.visit(n)
+            if isinstance(item, c_ast.Compound):
+                items.extend(item.block_items)
+            else:
+                items.append(item)
+
+        return items
 
     def c_make_compound(self, items):
         return c_ast.Compound(block_items=items)
@@ -246,10 +255,7 @@ class Translator(ast.RecursiveNodeVisitor):
         return self.c_make_subscript(value, slice)
 
     def visit_expr(self, node):
-        if isinstance(node.value, list):
-            return [ self.visit(n) for n in node.value ]
-        else:
-            return self.visit(node.value)
+        return self.c_make_compound(self.c_make_compound_list(node.value))
 
     def create_main_function(self):
 

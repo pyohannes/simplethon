@@ -274,3 +274,77 @@ def test_unique_name():
 }
 
 """, 0, 4)
+
+
+def test_print_int():
+    assert_translate(
+"""
+def main(args: List[str]) -> int:
+    print(23)
+    return 0
+""",
+"""SthRet sth_main(SthStatus *_1)
+{
+  SthInt *_4;
+  SthInt *_3;
+  SthList *args;
+  args = (SthList* ) sth_status_frame_argval_get(_1, 0);
+  if (sth_status_frame_add(_1, 0, 1) != STH_OK)
+  {
+    goto _2;
+  }
+
+  if (sth_int_new(_1) != STH_OK)
+  {
+    goto _2;
+  }
+
+  _3 = (SthInt* ) sth_status_frame_retval_get(_1, 0);
+  if (sth_status_frame_remove(_1) != STH_OK)
+  {
+    goto _2;
+  }
+
+  _3->value = 23;
+  if (sth_status_frame_add(_1, 1, 0) != STH_OK)
+  {
+    goto _2;
+  }
+
+  sth_status_frame_argval_set(_1, 0, (void* ) _3);
+  if (sth_print(_1) != STH_OK)
+  {
+    goto _2;
+  }
+
+  if (sth_status_frame_remove(_1) != STH_OK)
+  {
+    goto _2;
+  }
+
+  if (sth_status_frame_add(_1, 0, 1) != STH_OK)
+  {
+    goto _2;
+  }
+
+  if (sth_int_new(_1) != STH_OK)
+  {
+    goto _2;
+  }
+
+  _4 = (SthInt* ) sth_status_frame_retval_get(_1, 0);
+  if (sth_status_frame_remove(_1) != STH_OK)
+  {
+    goto _2;
+  }
+
+  _4->value = 0;
+  sth_status_frame_retval_set(_1, 0, (void* ) _4);
+  goto _2;
+  _2:
+  
+
+  return sth_status_status_get(_1);
+}
+
+""", 0, 4)

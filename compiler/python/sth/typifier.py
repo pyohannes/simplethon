@@ -67,7 +67,7 @@ class LinkVariables(ast.RecursiveNodeVisitor):
 
     def visit_module(self, node):
         for b in builtins.__builtins__:
-            node.sp[b.name.id] = b.name
+            node.sp[b.name] = b.sthname
 
     def visit_assign(self, node):
         name = node.targets[0].id

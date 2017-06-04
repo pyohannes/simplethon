@@ -8,6 +8,14 @@
 
 typedef struct {
     STH_OBJECT_MEMBERS
+    SthRet (*__add__)(SthStatus *st);
+    SthRet (*__sub__)(SthStatus *st);
+    SthRet (*__mul__)(SthStatus *st);
+    SthRet (*__div__)(SthStatus *st);
+    SthRet (*__mod__)(SthStatus *st);
+    SthRet (*__lt__)(SthStatus *st);
+    SthRet (*__le__)(SthStatus *st);
+    SthRet (*__eq__)(SthStatus *st);
     long value;
 } SthInt;
 

@@ -1,15 +1,13 @@
 import pytest
-from helper import assert_compiled_output
+from helper import assert_compiled_output_python_compat
 
 
-@pytest.mark.skipif(True, reason="Sample test")
-def test_hello_world():
-    assert_compiled_output(
+def test_print_int():
+    assert_compiled_output_python_compat(
 """
-def main(args) [str] -> int :
-    print("Hello World")
-      
+def main(args: List[str]) -> int :
+    x = 9
+    print(x)
+    free(x)
     return 0
-""",
-"""Hello World
-""", 0)
+""")

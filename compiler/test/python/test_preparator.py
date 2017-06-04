@@ -144,7 +144,7 @@ def isprime{n: int -> bool}(<genid1>: SthStatus) -> bool:
     <genid5>{bool} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
     if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
         goto <genid2>
-    if <genid5>{bool}:
+    if <genid5>{bool}.value{bool}:
         if (sth_status_frame_add(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
             goto <genid2>
         if (sth_bool_new{ -> bool}(<genid1>{SthStatus}) != STH_OK{SthRet}):
@@ -181,7 +181,7 @@ def isprime{n: int -> bool}(<genid1>: SthStatus) -> bool:
     <genid10>{bool} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
     if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
         goto <genid2>
-    if <genid10>{bool}:
+    if <genid10>{bool}.value{bool}:
         if (sth_status_frame_add(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
             goto <genid2>
         sth_status_frame_argval_set(<genid1>{SthStatus}, 0, n{int})
@@ -208,7 +208,7 @@ def isprime{n: int -> bool}(<genid1>: SthStatus) -> bool:
         <genid13>{bool} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
         if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
             goto <genid2>
-        if <genid13>{bool}:
+        if <genid13>{bool}.value{bool}:
             if (sth_status_frame_add(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
                 goto <genid2>
             if (sth_bool_new{ -> bool}(<genid1>{SthStatus}) != STH_OK{SthRet}):
@@ -261,7 +261,7 @@ def print_primes_from{start: int, end: int -> }(<genid17>: SthStatus):
     <genid20>{bool} = sth_status_frame_retval_get(<genid17>{SthStatus}, 0)
     if (sth_status_frame_remove(<genid17>{SthStatus}) != STH_OK{SthRet}):
         goto <genid19>
-    if <genid20>{bool}:
+    if <genid20>{bool}.value{bool}:
         if (sth_status_frame_add(<genid17>{SthStatus}, 1, 1) != STH_OK{SthRet}):
             goto <genid19>
         sth_status_frame_argval_set(<genid17>{SthStatus}, 0, start{int})
@@ -270,12 +270,12 @@ def print_primes_from{start: int, end: int -> }(<genid17>: SthStatus):
         <genid21>{bool} = sth_status_frame_retval_get(<genid17>{SthStatus}, 0)
         if (sth_status_frame_remove(<genid17>{SthStatus}) != STH_OK{SthRet}):
             goto <genid19>
-        if <genid21>{bool}:
+        if <genid21>{bool}.value{bool}:
             
             if (sth_status_frame_add(<genid17>{SthStatus}, 1, 0) != STH_OK{SthRet}):
                 goto <genid19>
             sth_status_frame_argval_set(<genid17>{SthStatus}, 0, start{int})
-            if (print{s: int -> }(<genid17>{SthStatus}) != STH_OK{SthRet}):
+            if (sth_print{s: int -> }(<genid17>{SthStatus}) != STH_OK{SthRet}):
                 goto <genid19>
             if (sth_status_frame_remove(<genid17>{SthStatus}) != STH_OK{SthRet}):
                 goto <genid19>

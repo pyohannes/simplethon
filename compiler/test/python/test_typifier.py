@@ -325,11 +325,11 @@ def main{args: List[str] -> int}(args: List[str]) -> int:
     y{float} = 3.4{float}
     z{bool} = True{bool}
     <genid1>{craw} = x{int}.__craw__{self: int -> craw}()
-    free{obj: craw -> }(<genid1>{craw})
+    sth_free{obj: craw -> }(<genid1>{craw})
     <genid2>{craw} = y{float}.__craw__{self: float -> craw}()
-    free{obj: craw -> }(<genid2>{craw})
+    sth_free{obj: craw -> }(<genid2>{craw})
     <genid3>{craw} = z{bool}.__craw__{self: bool -> craw}()
-    free{obj: craw -> }(<genid3>{craw})
+    sth_free{obj: craw -> }(<genid3>{craw})
     return 0{int}
 """, 0)
 
@@ -381,7 +381,7 @@ def print_primes_from{start: int, end: int -> }(start: int, end: int):
     if <genid8>{bool}:
         <genid9>{bool} = isprime{n: int -> bool}(start{int})
         if <genid9>{bool}:
-            print{s: int -> }(start{int})
+            sth_print{s: int -> }(start{int})
         start{int} = start{int}.__add__{self: int, n: int -> int}(1{int})
         goto <genid7>
 
