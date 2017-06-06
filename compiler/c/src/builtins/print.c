@@ -2,21 +2,20 @@
 #define STH_BUILTINS_PRINT_H
 
 #include <stdio.h>
+#include "sth/base.h"
 #include "sth/builtins/print.h"
 #include "sth/builtins/int.h"
 
 
-SthRet sth_print (SthStatus *st)
+SthRet sth_print (SthStatus *st, SthCraw **ret, SthInt *i)
 {
-    SthInt *i = sth_status_frame_argval_get (st, 0);
+    int retcode = printf ("%ld\n", i->value);
 
-    int ret = printf ("%ld\n", i->value);
-
-    if (ret <= 0) {
-        sth_status_status_set (st, STH_ERR_IO);
+    if (retcode <= 0) {
+        st->status = STH_ERR_IO;
     }
 
-    return sth_status_status_get (st);
+    return st->status;
 }
 
 

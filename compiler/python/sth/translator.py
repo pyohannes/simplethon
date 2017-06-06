@@ -15,7 +15,7 @@ class Translator(ast.RecursiveNodeVisitor):
         def visit_name(self, node):
             if node.id:
                 self.names.add(node.id)
-    
+
     def __init__(self):
         super(Translator, self).__init__(None)
 
@@ -82,7 +82,12 @@ class Translator(ast.RecursiveNodeVisitor):
         return c_ast.PtrDecl(quals=[], type=self.c_make_type_decl(node, tp))
 
     def c_make_func_arg(self, node, tp):
-        declname = self.c_make_unique_var_name(node)
+        if isinstance(node, ast.Pointer):
+            return self.c_make_func_arg(node.name, tp + '*')
+        elif isinstance(node, str):
+            declname = node
+        else:
+            declname = self.c_make_unique_var_name(node)
         if isinstance(tp, str):
             tp = self.c_make_type_decl(declname, tp)
         return c_ast.Decl(name=declname, quals=[], storage=[], funcspec=[],
@@ -148,20 +153,36 @@ class Translator(ast.RecursiveNodeVisitor):
     def c_make_addrof(self, expr):
         return c_ast.UnaryOp(op='&', expr=expr)
 
+    def c_make_unaryop(self, op, expr):
+        return c_ast.UnaryOp(op=op, expr=expr)
+
+    def visit_arg(self, node):
+        if isinstance(node.annotation, ast.Name):
+            sthtp = node.annotation.id
+        elif isinstance(node.annotation, ast.Subscript):
+            sthtp = node.annotation.value.id
+        if sthtp == 'SthStatus':
+            tp = 'SthStatus*'
+        else:
+            tp = 'Sth%s%s*' % (sthtp[0].upper(), sthtp[1:])
+        return self.c_make_func_arg(node.arg, tp)
+
     def visit_functiondef(self, node):
         name = node.name
         if node.name  == 'main':
             name = 'sth_main'
             self._main_function = True
-        fargs = [ self.c_make_func_arg(node.args.args[0].arg, 'SthStatus*') ]
+        fargs = [ self.visit(n) for n in node.args.args ]
         fdecl = self.c_make_func_decl(name, 'SthRet', fargs)
 
         self._compound_scopes.clear()
         fbody = self.c_make_compound(self.c_make_compound_list(node.body))
 
         for k, v in self._compound_scopes.items():
-           tpstr = self.c_make_ctype_name(v.tp)
-           fbody.block_items.insert(0, self.c_make_func_arg(v, tpstr)) 
+            if k in [ farg.name for farg in fargs ]:
+                continue
+            tpstr = self.c_make_ctype_name(v.tp)
+            fbody.block_items.insert(0, self.c_make_func_arg(v, tpstr)) 
 
         return self.c_make_func_def(fdecl, fbody)
 
@@ -223,14 +244,18 @@ class Translator(ast.RecursiveNodeVisitor):
     def visit_gte(self, node):
         return '>='
 
+    def visit_pointer(self, node):
+        return self.c_make_unaryop('*', self.visit(node.name))
+
+    def visit_dereference(self, node):
+        return self.c_make_unaryop('&', self.visit(node.name))
+
     def visit_call(self, node):
         name = self.visit(node.func)
+        for ref in node.args[1:3]:
+            if isinstance(ref, ast.Dereference) and ref.name.id:
+                self._compound_scopes[ref.name.id] = ref.name
         args = self.c_make_expr_list([ self.visit(n) for n in node.args ])
-        if isinstance(node.func, ast.Name) and node.func.id in (
-                'sth_status_frame_retval_set', 'sth_status_frame_argval_set'):
-            args.exprs[-1] = self.c_make_cast(
-                    self.c_make_type_id('void*', ''),
-                    args.exprs[-1])
         return self.c_make_call(name, args)
 
     def visit_assign(self, node):
@@ -240,6 +265,8 @@ class Translator(ast.RecursiveNodeVisitor):
         cvalue = self.visit(value)
         if isinstance(ctarget, c_ast.ID):
             self._compound_scopes[target.id] = target
+        elif isinstance(ctarget, c_ast.UnaryOp) and ctarget.op == '*':
+            self._compound_scopes[target.name.id] = target.name
         if not hasattr(value, 'tp'):
             tpstr = self.c_make_ctype_name(target.tp)
             tp = self.c_make_type_id(tpstr, '')
@@ -258,20 +285,6 @@ class Translator(ast.RecursiveNodeVisitor):
         return self.c_make_compound(self.c_make_compound_list(node.value))
 
     def create_main_function(self):
-
-        def _call_sth_frame_new(argc, retc):
-            return self.c_make_if(
-                self.c_make_binop(
-                    '!=', 
-                    self.c_make_call(
-                        'sth_status_frame_add',
-                        self.c_make_expr_list([
-                            self.c_make_id(staname.id),
-                            self.c_make_constant(str(argc), 'int'),
-                            self.c_make_constant(str(retc), 'int') ])),
-                    self.c_make_id('STH_OK')),
-                self.c_make_compound([ self.c_make_goto(gotoname) ]), 
-                None)
 
         def _call_sth_onearg_call(name):
             return self.c_make_if(
@@ -339,31 +352,23 @@ class Translator(ast.RecursiveNodeVisitor):
                     self.c_make_compound([ self.c_make_goto(gotoname) ]), 
                     None))
 
-        # if (sth_frame_new(st, 1, 1) != STH_OK) {
+        # if (sth_main(st, &ret, args) != STH_OK) {
         #   goto stherror;
         # }
-        body.append(_call_sth_frame_new(1, 1))
-
-        # st->current_frame->arg_values[0] = (void* ) _6; 
-        body.append(_arg_value_0_set(self.c_make_id(argname.id)))
-
-        # if (sth_main(st) != STH_OK) {
-        #   goto stherror;
-        # }
-        body.append(_call_sth_onearg_call('sth_main'))
-        
-        # SthInt *sthret = _5->current_frame->return_values[0];
         body.append(
-                self.c_make_assign(
-                    self.c_make_id(sthretname.id),
-                    self.c_make_cast(
-                        self.c_make_type_id('SthInt*', ''),
+                self.c_make_if(
+                    self.c_make_binop(
+                        '!=', 
                         self.c_make_call(
-                            'sth_status_frame_retval_get',
+                            self.c_make_id('sth_main'),
                             self.c_make_expr_list([
                                 self.c_make_id(staname.id),
-                                self.c_make_constant('0', 'int')])))))
-
+                                self.c_make_addrof(self.c_make_id(sthretname.id)),
+                                self.c_make_id(argname.id)])),
+                        self.c_make_id('STH_OK')),
+                    self.c_make_compound([ self.c_make_goto(gotoname) ]), 
+                    None))
+        
         # _4 = sthret->value;
         body.append(
                 self.c_make_assign(
@@ -372,28 +377,21 @@ class Translator(ast.RecursiveNodeVisitor):
                         self.c_make_id(sthretname.id),
                         'value')))
 
-        # if (sth_frame_free(st) != STH_OK) {
+        # if (sthret->free(sthret) != STH_OK) {
         #   goto stherror;
         # }
-        body.append(_call_sth_onearg_call('sth_status_frame_remove'))
-
-        # if (sth_frame_new(&st, 1, 0) != STH_OK) {
-        #   goto stherror;
-        # }
-        body.append(_call_sth_frame_new(1, 0))
-
-        # st->current_frame->arg_values[0] = (void* ) _7; 
-        body.append(_arg_value_0_set(self.c_make_id(sthretname.id)))
-
-        # if (sth_int_free(st) != STH_OK) {
-        #   goto stherror;
-        # }
-        body.append(_call_sth_onearg_call('sth_int_free'))
-
-        # if (sth_frame_free(st) != STH_OK) {
-        #   goto stherror;
-        # }
-        body.append(_call_sth_onearg_call('sth_status_frame_remove'))
+        body.append(
+                self.c_make_if(
+                    self.c_make_binop(
+                        '!=', 
+                        self.c_make_call(
+                            self.c_make_struct_ref(
+                                self.c_make_id(sthretname.id),
+                                'free'),
+                            self.c_make_id(sthretname.id)),
+                        self.c_make_id('STH_OK')),
+                    self.c_make_compound([ self.c_make_goto(gotoname) ]), 
+                    None))
 
         # sth_status_free(_7);
         body.append(
@@ -430,13 +428,13 @@ class Translator(ast.RecursiveNodeVisitor):
                             self.c_make_expr_list([
                                 self.c_make_id('stderr'),
                                 self.c_make_constant('": %d\\n"', 'char*'),
-                                self.c_make_call(
-                                    'sth_status_status_get',
-                                    self.c_make_id(staname.id))])),
+                                self.c_make_struct_ref(
+                                    self.c_make_id(staname.id),
+                                    'status')])),
                         self.c_make_return(         
-                            self.c_make_call(
-                                'sth_status_status_get',
-                                self.c_make_id(staname.id)))]),
+                            self.c_make_struct_ref(
+                                self.c_make_id(staname.id),
+                                'status'))]),
                     self.c_make_compound([ 
                         self.c_make_call(
                             self.c_make_id('fprintf'),

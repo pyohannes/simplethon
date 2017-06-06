@@ -5,14 +5,16 @@
 #include "sth/status.h"
 
 
+typedef struct SthObject_ SthObject;
+
 #define STH_OBJECT_MEMBERS \
-    void (*free)(void *); \
-    SthRet (*__craw__)(SthStatus *);
+    SthRet (*free)(void *); \
+    SthRet (*__craw__)(SthStatus *, SthCraw **, SthObject *);
 
 
-typedef struct {
+struct SthObject_ {
     STH_OBJECT_MEMBERS
-} SthObject;
+};
 
 
 #endif /* STH_OBJECT_H */

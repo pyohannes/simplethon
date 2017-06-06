@@ -15,19 +15,12 @@ def test_simple():
 """,
 """
 
-def main{args: List[str] -> int}(<genid1>: SthStatus) -> int:
-    args{List[str]} = sth_status_frame_argval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_add(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-        goto <genid2>
-    if (sth_int_new{ -> int}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid3>{int} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid3>{int}.value{int} = 0{int}
-    sth_status_frame_retval_set(<genid1>{SthStatus}, 0, <genid3>{int})
-    goto <genid2>
-    <genid2>: return sth_status_status_get(<genid1>{SthStatus})
+def main{args: List[str] -> int}(<genid1>: SthStatus, *<genid2>: int, args: List[str]) -> int:
+    if (sth_int_new{ -> int}(<genid1>{SthStatus}, &<genid3>{int}, 0{int}) != STH_OK{SthRet}):
+        goto <genid4>
+    *<genid2>{int} = <genid3>{int}
+    goto <genid4>
+    <genid4>: return <genid1>{SthStatus}.status
 """, 0)
 
 
@@ -43,50 +36,23 @@ def main(args: List[str]) -> int:
 """,
 """
 
-def add1{n: int -> int}(<genid1>: SthStatus) -> int:
-    n{int} = sth_status_frame_argval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_add(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-        goto <genid2>
-    if (sth_int_new{ -> int}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid3>{int} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid3>{int}.value{int} = 1{int}
-    if (sth_status_frame_add(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
-        goto <genid2>
-    sth_status_frame_argval_set(<genid1>{SthStatus}, 0, n{int})
-    sth_status_frame_argval_set(<genid1>{SthStatus}, 1, <genid3>{int})
-    if (n{int}.__add__{self: int, n: int -> int}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid4>{int} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    sth_status_frame_retval_set(<genid1>{SthStatus}, 0, <genid4>{int})
-    goto <genid2>
-    <genid2>: return sth_status_status_get(<genid1>{SthStatus})
+def add1{n: int -> int}(<genid1>: SthStatus, *<genid2>: int, n: int) -> int:
+    if (sth_int_new{ -> int}(<genid1>{SthStatus}, &<genid3>{int}, 1{int}) != STH_OK{SthRet}):
+        goto <genid4>
+    if (n{int}.__add__{self: int, n: int -> int}(<genid1>{SthStatus}, &<genid5>{int}, n{int}, <genid3>{int}) != STH_OK{SthRet}):
+        goto <genid4>
+    *<genid2>{int} = <genid5>{int}
+    goto <genid4>
+    <genid4>: return <genid1>{SthStatus}.status
 
-def main{args: List[str] -> int}(<genid5>: SthStatus) -> int:
-    args{List[str]} = sth_status_frame_argval_get(<genid5>{SthStatus}, 0)
-    if (sth_status_frame_add(<genid5>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-        goto <genid6>
-    if (sth_int_new{ -> int}(<genid5>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid6>
-    <genid7>{int} = sth_status_frame_retval_get(<genid5>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid5>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid6>
-    <genid7>{int}.value{int} = 9{int}
-    if (sth_status_frame_add(<genid5>{SthStatus}, 1, 1) != STH_OK{SthRet}):
-        goto <genid6>
-    sth_status_frame_argval_set(<genid5>{SthStatus}, 0, <genid7>{int})
-    if (add1{n: int -> int}(<genid5>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid6>
-    x{int} = sth_status_frame_retval_get(<genid5>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid5>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid6>
-    sth_status_frame_retval_set(<genid5>{SthStatus}, 0, x{int})
-    goto <genid6>
-    <genid6>: return sth_status_status_get(<genid5>{SthStatus})
+def main{args: List[str] -> int}(<genid6>: SthStatus, *<genid7>: int, args: List[str]) -> int:
+    if (sth_int_new{ -> int}(<genid6>{SthStatus}, &<genid8>{int}, 9{int}) != STH_OK{SthRet}):
+        goto <genid9>
+    if (add1{n: int -> int}(<genid6>{SthStatus}, &x{int}, <genid8>{int}) != STH_OK{SthRet}):
+        goto <genid9>
+    *<genid7>{int} = x{int}
+    goto <genid9>
+    <genid9>: return <genid6>{SthStatus}.status
 """, 0)
 
 
@@ -116,225 +82,70 @@ def main(args: List[str]) -> int:
 """,
 """
 
-def isprime{n: int -> bool}(<genid1>: SthStatus) -> bool:
-    n{int} = sth_status_frame_argval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_add(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-        goto <genid2>
-    if (sth_int_new{ -> int}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid3>{int} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid3>{int}.value{int} = 2{int}
+def isprime{n: int -> bool}(<genid1>: SthStatus, *<genid2>: bool, n: int) -> bool:
+    if (sth_int_new{ -> int}(<genid1>{SthStatus}, &<genid3>{int}, 2{int}) != STH_OK{SthRet}):
+        goto <genid4>
     d{int} = <genid3>{int}
-    if (sth_status_frame_add(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-        goto <genid2>
-    if (sth_int_new{ -> int}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid4>{int} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid4>{int}.value{int} = 4{int}
-    if (sth_status_frame_add(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
-        goto <genid2>
-    sth_status_frame_argval_set(<genid1>{SthStatus}, 0, n{int})
-    sth_status_frame_argval_set(<genid1>{SthStatus}, 1, <genid4>{int})
-    if (n{int}.__lt__{self: int, n: int -> bool}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid5>{bool} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    if <genid5>{bool}.value{bool}:
-        if (sth_status_frame_add(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-            goto <genid2>
-        if (sth_bool_new{ -> bool}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid2>
-        <genid6>{bool} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-        if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid2>
-        <genid6>{bool}.value{bool} = 1
-        sth_status_frame_retval_set(<genid1>{SthStatus}, 0, <genid6>{bool})
-        goto <genid2>
-    <genid7>: if (sth_status_frame_add(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-        goto <genid2>
-    if (sth_int_new{ -> int}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid8>{int} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid8>{int}.value{int} = 2{int}
-    if (sth_status_frame_add(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
-        goto <genid2>
-    sth_status_frame_argval_set(<genid1>{SthStatus}, 0, n{int})
-    sth_status_frame_argval_set(<genid1>{SthStatus}, 1, <genid8>{int})
-    if (n{int}.__div__{self: int, n: int -> int}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid9>{int} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    if (sth_status_frame_add(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
-        goto <genid2>
-    sth_status_frame_argval_set(<genid1>{SthStatus}, 0, d{int})
-    sth_status_frame_argval_set(<genid1>{SthStatus}, 1, <genid9>{int})
-    if (d{int}.__lt__{self: int, n: int -> bool}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid10>{bool} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
+    if (sth_int_new{ -> int}(<genid1>{SthStatus}, &<genid5>{int}, 4{int}) != STH_OK{SthRet}):
+        goto <genid4>
+    if (n{int}.__lt__{self: int, n: int -> bool}(<genid1>{SthStatus}, &<genid6>{bool}, n{int}, <genid5>{int}) != STH_OK{SthRet}):
+        goto <genid4>
+    if <genid6>{bool}.value{bool}:
+        *<genid2>{bool} = Sth_True{bool}
+        goto <genid4>
+    <genid7>: if (sth_int_new{ -> int}(<genid1>{SthStatus}, &<genid8>{int}, 2{int}) != STH_OK{SthRet}):
+        goto <genid4>
+    if (n{int}.__div__{self: int, n: int -> int}(<genid1>{SthStatus}, &<genid9>{int}, n{int}, <genid8>{int}) != STH_OK{SthRet}):
+        goto <genid4>
+    if (d{int}.__lt__{self: int, n: int -> bool}(<genid1>{SthStatus}, &<genid10>{bool}, d{int}, <genid9>{int}) != STH_OK{SthRet}):
+        goto <genid4>
     if <genid10>{bool}.value{bool}:
-        if (sth_status_frame_add(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
-            goto <genid2>
-        sth_status_frame_argval_set(<genid1>{SthStatus}, 0, n{int})
-        sth_status_frame_argval_set(<genid1>{SthStatus}, 1, d{int})
-        if (n{int}.__mod__{self: int, n: int -> int}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid2>
-        <genid11>{int} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-        if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid2>
-        if (sth_status_frame_add(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-            goto <genid2>
-        if (sth_int_new{ -> int}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid2>
-        <genid12>{int} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-        if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid2>
-        <genid12>{int}.value{int} = 0{int}
-        if (sth_status_frame_add(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
-            goto <genid2>
-        sth_status_frame_argval_set(<genid1>{SthStatus}, 0, <genid11>{int})
-        sth_status_frame_argval_set(<genid1>{SthStatus}, 1, <genid12>{int})
-        if (<genid11>{int}.__eq__{self: int, n: int -> bool}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid2>
-        <genid13>{bool} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-        if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid2>
+        if (n{int}.__mod__{self: int, n: int -> int}(<genid1>{SthStatus}, &<genid11>{int}, n{int}, d{int}) != STH_OK{SthRet}):
+            goto <genid4>
+        if (sth_int_new{ -> int}(<genid1>{SthStatus}, &<genid12>{int}, 0{int}) != STH_OK{SthRet}):
+            goto <genid4>
+        if (<genid11>{int}.__eq__{self: int, n: int -> bool}(<genid1>{SthStatus}, &<genid13>{bool}, <genid11>{int}, <genid12>{int}) != STH_OK{SthRet}):
+            goto <genid4>
         if <genid13>{bool}.value{bool}:
-            if (sth_status_frame_add(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-                goto <genid2>
-            if (sth_bool_new{ -> bool}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-                goto <genid2>
-            <genid14>{bool} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-            if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-                goto <genid2>
-            <genid14>{bool}.value{bool} = 0
-            sth_status_frame_retval_set(<genid1>{SthStatus}, 0, <genid14>{bool})
-            goto <genid2>
-        if (sth_status_frame_add(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-            goto <genid2>
-        if (sth_int_new{ -> int}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid2>
-        <genid15>{int} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-        if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid2>
-        <genid15>{int}.value{int} = 1{int}
-        if (sth_status_frame_add(<genid1>{SthStatus}, 2, 1) != STH_OK{SthRet}):
-            goto <genid2>
-        sth_status_frame_argval_set(<genid1>{SthStatus}, 0, d{int})
-        sth_status_frame_argval_set(<genid1>{SthStatus}, 1, <genid15>{int})
-        if (d{int}.__add__{self: int, n: int -> int}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid2>
-        d{int} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-        if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid2>
+            *<genid2>{bool} = Sth_False{bool}
+            goto <genid4>
+        if (sth_int_new{ -> int}(<genid1>{SthStatus}, &<genid14>{int}, 1{int}) != STH_OK{SthRet}):
+            goto <genid4>
+        if (d{int}.__add__{self: int, n: int -> int}(<genid1>{SthStatus}, &d{int}, d{int}, <genid14>{int}) != STH_OK{SthRet}):
+            goto <genid4>
         goto <genid7>
-    if (sth_status_frame_add(<genid1>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-        goto <genid2>
-    if (sth_bool_new{ -> bool}(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid16>{bool} = sth_status_frame_retval_get(<genid1>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid1>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid2>
-    <genid16>{bool}.value{bool} = 1
-    sth_status_frame_retval_set(<genid1>{SthStatus}, 0, <genid16>{bool})
-    goto <genid2>
-    <genid2>: return sth_status_status_get(<genid1>{SthStatus})
+    *<genid2>{bool} = Sth_True{bool}
+    goto <genid4>
+    <genid4>: return <genid1>{SthStatus}.status
 
-def print_primes_from{start: int, end: int -> }(<genid17>: SthStatus):
-    start{int} = sth_status_frame_argval_get(<genid17>{SthStatus}, 0)
-    end{int} = sth_status_frame_argval_get(<genid17>{SthStatus}, 1)
-    <genid18>: if (sth_status_frame_add(<genid17>{SthStatus}, 2, 1) != STH_OK{SthRet}):
+def print_primes_from{start: int, end: int -> }(<genid15>: SthStatus, *<genid16>: craw, start: int, end: int):
+    <genid17>: if (start{int}.__le__{self: int, n: int -> bool}(<genid15>{SthStatus}, &<genid18>{bool}, start{int}, end{int}) != STH_OK{SthRet}):
         goto <genid19>
-    sth_status_frame_argval_set(<genid17>{SthStatus}, 0, start{int})
-    sth_status_frame_argval_set(<genid17>{SthStatus}, 1, end{int})
-    if (start{int}.__le__{self: int, n: int -> bool}(<genid17>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid19>
-    <genid20>{bool} = sth_status_frame_retval_get(<genid17>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid17>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid19>
-    if <genid20>{bool}.value{bool}:
-        if (sth_status_frame_add(<genid17>{SthStatus}, 1, 1) != STH_OK{SthRet}):
+    if <genid18>{bool}.value{bool}:
+        if (isprime{n: int -> bool}(<genid15>{SthStatus}, &<genid20>{bool}, start{int}) != STH_OK{SthRet}):
             goto <genid19>
-        sth_status_frame_argval_set(<genid17>{SthStatus}, 0, start{int})
-        if (isprime{n: int -> bool}(<genid17>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid19>
-        <genid21>{bool} = sth_status_frame_retval_get(<genid17>{SthStatus}, 0)
-        if (sth_status_frame_remove(<genid17>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid19>
-        if <genid21>{bool}.value{bool}:
+        if <genid20>{bool}.value{bool}:
             
-            if (sth_status_frame_add(<genid17>{SthStatus}, 1, 0) != STH_OK{SthRet}):
+            if (sth_print{s: int -> }(<genid15>{SthStatus}, &<genid21>{craw}, start{int}) != STH_OK{SthRet}):
                 goto <genid19>
-            sth_status_frame_argval_set(<genid17>{SthStatus}, 0, start{int})
-            if (sth_print{s: int -> }(<genid17>{SthStatus}) != STH_OK{SthRet}):
-                goto <genid19>
-            if (sth_status_frame_remove(<genid17>{SthStatus}) != STH_OK{SthRet}):
-                goto <genid19>
-        if (sth_status_frame_add(<genid17>{SthStatus}, 0, 1) != STH_OK{SthRet}):
+        if (sth_int_new{ -> int}(<genid15>{SthStatus}, &<genid22>{int}, 1{int}) != STH_OK{SthRet}):
             goto <genid19>
-        if (sth_int_new{ -> int}(<genid17>{SthStatus}) != STH_OK{SthRet}):
+        if (start{int}.__add__{self: int, n: int -> int}(<genid15>{SthStatus}, &start{int}, start{int}, <genid22>{int}) != STH_OK{SthRet}):
             goto <genid19>
-        <genid22>{int} = sth_status_frame_retval_get(<genid17>{SthStatus}, 0)
-        if (sth_status_frame_remove(<genid17>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid19>
-        <genid22>{int}.value{int} = 1{int}
-        if (sth_status_frame_add(<genid17>{SthStatus}, 2, 1) != STH_OK{SthRet}):
-            goto <genid19>
-        sth_status_frame_argval_set(<genid17>{SthStatus}, 0, start{int})
-        sth_status_frame_argval_set(<genid17>{SthStatus}, 1, <genid22>{int})
-        if (start{int}.__add__{self: int, n: int -> int}(<genid17>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid19>
-        start{int} = sth_status_frame_retval_get(<genid17>{SthStatus}, 0)
-        if (sth_status_frame_remove(<genid17>{SthStatus}) != STH_OK{SthRet}):
-            goto <genid19>
-        goto <genid18>
-    <genid19>: return sth_status_status_get(<genid17>{SthStatus})
+        goto <genid17>
+    <genid19>: return <genid15>{SthStatus}.status
 
-def main{args: List[str] -> int}(<genid23>: SthStatus) -> int:
-    args{List[str]} = sth_status_frame_argval_get(<genid23>{SthStatus}, 0)
-    if (sth_status_frame_add(<genid23>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-        goto <genid24>
-    if (sth_int_new{ -> int}(<genid23>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid24>
-    <genid25>{int} = sth_status_frame_retval_get(<genid23>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid23>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid24>
-    <genid25>{int}.value{int} = 1{int}
-    if (sth_status_frame_add(<genid23>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-        goto <genid24>
-    if (sth_int_new{ -> int}(<genid23>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid24>
-    <genid26>{int} = sth_status_frame_retval_get(<genid23>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid23>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid24>
-    <genid26>{int}.value{int} = 100{int}
+def main{args: List[str] -> int}(<genid23>: SthStatus, *<genid24>: int, args: List[str]) -> int:
+    if (sth_int_new{ -> int}(<genid23>{SthStatus}, &<genid25>{int}, 1{int}) != STH_OK{SthRet}):
+        goto <genid26>
+    if (sth_int_new{ -> int}(<genid23>{SthStatus}, &<genid27>{int}, 100{int}) != STH_OK{SthRet}):
+        goto <genid26>
     
-    if (sth_status_frame_add(<genid23>{SthStatus}, 2, 0) != STH_OK{SthRet}):
-        goto <genid24>
-    sth_status_frame_argval_set(<genid23>{SthStatus}, 0, <genid25>{int})
-    sth_status_frame_argval_set(<genid23>{SthStatus}, 1, <genid26>{int})
-    if (print_primes_from{start: int, end: int -> }(<genid23>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid24>
-    if (sth_status_frame_remove(<genid23>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid24>
-    if (sth_status_frame_add(<genid23>{SthStatus}, 0, 1) != STH_OK{SthRet}):
-        goto <genid24>
-    if (sth_int_new{ -> int}(<genid23>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid24>
-    <genid27>{int} = sth_status_frame_retval_get(<genid23>{SthStatus}, 0)
-    if (sth_status_frame_remove(<genid23>{SthStatus}) != STH_OK{SthRet}):
-        goto <genid24>
-    <genid27>{int}.value{int} = 0{int}
-    sth_status_frame_retval_set(<genid23>{SthStatus}, 0, <genid27>{int})
-    goto <genid24>
-    <genid24>: return sth_status_status_get(<genid23>{SthStatus})
+    if (print_primes_from{start: int, end: int -> }(<genid23>{SthStatus}, &<genid28>{craw}, <genid25>{int}, <genid27>{int}) != STH_OK{SthRet}):
+        goto <genid26>
+    if (sth_int_new{ -> int}(<genid23>{SthStatus}, &<genid29>{int}, 0{int}) != STH_OK{SthRet}):
+        goto <genid26>
+    *<genid24>{int} = <genid29>{int}
+    goto <genid26>
+    <genid26>: return <genid23>{SthStatus}.status
 """, 0)

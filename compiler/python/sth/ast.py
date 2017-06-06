@@ -16,14 +16,28 @@ def flatten(l):
     return ret
 
 
-class GotoLabel():
+class GotoLabel(AST):
     _fields = ('name',)
 
     def __init__(self, name=None):
         self.name = name
 
 
-class Goto():
+class Goto(AST):
+    _fields = ('name',)
+
+    def __init__(self, name=None):
+        self.name = name
+
+
+class Pointer(AST):
+    _fields = ('name',)
+
+    def __init__(self, name=None):
+        self.name = name
+
+
+class Dereference(AST):
     _fields = ('name',)
 
     def __init__(self, name=None):
@@ -138,6 +152,16 @@ class RecursiveNodeVisitor(NodeVisitor):
         if slice:
             value = ast.Subscript(value=value, slice=slice)
         return value
+
+    def make_pointer(self, name, parent):
+        ptr = Pointer(name)
+        self.copy_source_attrs(parent, ptr)
+        return ptr
+
+    def make_dereference(self, name, parent):
+        ref = Dereference(name)
+        self.copy_source_attrs(parent, ref)
+        return ref
 
     def make_assign(self, targets, value):
         if not isinstance(targets, list):

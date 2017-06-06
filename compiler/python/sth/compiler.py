@@ -91,7 +91,7 @@ def run_cmd(cmd, msg, err_msg_prefix):
 
 
 def ccompile(src_file, dst_dir, inc):
-    compilestr = 'gcc -Wall -g -I%(inc)s -o %(out)s -c %(src)s'
+    compilestr = 'gcc -Wall -O3 -I%(inc)s -o %(out)s -c %(src)s'
     args = dict(inc=inc, src=src_file, out='%s.o' % src_file)
     run_cmd(compilestr % args, 
             "Compiling %(src)s to %(out)s" % args,

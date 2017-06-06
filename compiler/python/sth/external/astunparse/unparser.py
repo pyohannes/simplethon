@@ -84,12 +84,9 @@ class Unparser:
         meth = getattr(self, "_"+tree.__class__.__name__)
         meth(tree)
 
-        ignore_instances = ( ast.FunctionDef, ast.Assign, ast.Call )
+        ignore_instances = ( 'FunctionDef', 'Assign', 'Call', 'Pointer')
         if hasattr(tree, 'tp'):
-            for i in ignore_instances:
-                if isinstance(tree, i):
-                    break
-            else:
+            if not tree.__class__.__name__ in ignore_instances:
                 if hasattr(tree.tp, 'args'):
                     # duck typing: types.Function
                     self._FunctionType(tree.tp)
@@ -492,6 +489,14 @@ class Unparser:
     def _Name(self, t):
         self.write(t.id or self.generate_id[id(t)])
 
+    def _Dereference(self, t):
+        self.write('&')
+        self.dispatch(t.name)
+
+    def _Pointer(self, t):
+        self.write('*')
+        self.dispatch(t.name)
+
     def _NameConstant(self, t):
         self.write(repr(t.value))
 
@@ -690,6 +695,9 @@ class Unparser:
     def _arg(self, t):
         if isinstance(t.arg, ast.Name):
             self._Name(t.arg)
+        elif t.arg.__class__.__name__ == 'Pointer':
+            self.write('*')
+            self._Name(t.arg.name)
         else:
             self.write(t.arg)
         if t.annotation:

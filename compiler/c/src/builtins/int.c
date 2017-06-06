@@ -4,268 +4,227 @@
 #include "sth/status.h"
 
 
-static void sth_int_free_internal (void *obj)
+#define STH_MAKE_INT(val) \
+    {  sth_int_free_internal, \
+       sth_int___craw___internal, \
+       sth_int___add___internal, \
+       sth_int___sub___internal, \
+       sth_int___mul___internal, \
+       sth_int___div___internal, \
+       sth_int___mod___internal, \
+       sth_int___lt___internal, \
+       sth_int___le___internal, \
+       sth_int___eq___internal, \
+       val }
+
+
+static SthRet sth_int_free_internal (void *obj)
 {
-    if (obj) {
+    SthInt *i = (SthInt *)obj;
+
+    if (i && (i->value < 0 || i->value > 100)) {
         free (obj);
     }
+
+    return STH_OK;
 }
 
 
-static SthRet sth_int___craw___internal (SthStatus *st)
+static SthRet sth_int___craw___internal (SthStatus *st, SthCraw **ret, 
+        SthObject *i)
 {
-    SthInt *i = (SthInt *) sth_status_frame_argval_get (st, 0);
-    sth_status_frame_retval_set (st, 0, i);
-    return sth_status_status_get (st);
+    *ret = (SthCraw *) i;
+    return st->status;
 }
 
 
-static SthRet sth_int___add___internal (SthStatus *st)
+static SthRet sth_int___add___internal (SthStatus *st, SthInt **ret, 
+        SthInt *self, SthInt *other)
 {
-    SthInt *i1 = (SthInt *) sth_status_frame_argval_get (st, 0);
-    SthInt *i2 = (SthInt *) sth_status_frame_argval_get (st, 1);
-    SthInt *result;
-
-    if (sth_status_frame_add(st, 0, 1) != STH_OK) {
-        goto sth_int___add___error;
-    }
-
-    if (sth_int_new(st) != STH_OK) {
-        goto sth_int___add___error;
-    }
-    
-    result = (SthInt* ) sth_status_frame_retval_get(st, 0);
-    if (sth_status_frame_remove(st) != STH_OK) {
-        goto sth_int___add___error;
-    }
-   
-    result->value = i1->value + i2->value;
-    sth_status_frame_retval_set (st, 0, (void *)result);
-
-sth_int___add___error:
-    return sth_status_status_get (st);
+    sth_int_new(st, ret, self->value + other->value);
+    return st->status;
 }
 
 
-static SthRet sth_int___sub___internal (SthStatus *st)
+static SthRet sth_int___sub___internal (SthStatus *st, SthInt **ret, 
+        SthInt *self, SthInt *other)
 {
-    SthInt *i1 = (SthInt *) sth_status_frame_argval_get (st, 0);
-    SthInt *i2 = (SthInt *) sth_status_frame_argval_get (st, 1);
-    SthInt *result;
-
-    if (sth_status_frame_add(st, 0, 1) != STH_OK) {
-        goto sth_int___sub___error;
-    }
-
-    if (sth_int_new(st) != STH_OK) {
-        goto sth_int___sub___error;
-    }
-    
-    result = (SthInt* ) sth_status_frame_retval_get(st, 0);
-    if (sth_status_frame_remove(st) != STH_OK) {
-        goto sth_int___sub___error;
-    }
-   
-    result->value = i1->value - i2->value;
-    sth_status_frame_retval_set (st, 0, (void *)result);
-
-sth_int___sub___error:
-    return sth_status_status_get (st);
+    sth_int_new(st, ret, self->value - other->value);
+    return st->status;
 }
 
 
-static SthRet sth_int___mul___internal (SthStatus *st)
+static SthRet sth_int___mul___internal (SthStatus *st, SthInt **ret, 
+        SthInt *self, SthInt *other)
 {
-    SthInt *i1 = (SthInt *) sth_status_frame_argval_get (st, 0);
-    SthInt *i2 = (SthInt *) sth_status_frame_argval_get (st, 1);
-    SthInt *result;
-
-    if (sth_status_frame_add(st, 0, 1) != STH_OK) {
-        goto sth_int___mul___error;
-    }
-
-    if (sth_int_new(st) != STH_OK) {
-        goto sth_int___mul___error;
-    }
-    
-    result = (SthInt* ) sth_status_frame_retval_get(st, 0);
-    if (sth_status_frame_remove(st) != STH_OK) {
-        goto sth_int___mul___error;
-    }
-   
-    result->value = i1->value * i2->value;
-    sth_status_frame_retval_set (st, 0, (void *)result);
-
-sth_int___mul___error:
-    return sth_status_status_get (st);
+    sth_int_new(st, ret, self->value * other->value);
+    return st->status;
 }
 
 
-static SthRet sth_int___div___internal (SthStatus *st)
+static SthRet sth_int___div___internal (SthStatus *st, SthInt **ret, 
+        SthInt *self, SthInt *other)
 {
-    SthInt *i1 = (SthInt *) sth_status_frame_argval_get (st, 0);
-    SthInt *i2 = (SthInt *) sth_status_frame_argval_get (st, 1);
-    SthInt *result;
-
-    if (sth_status_frame_add(st, 0, 1) != STH_OK) {
-        goto sth_int___div___error;
-    }
-
-    if (sth_int_new(st) != STH_OK) {
-        goto sth_int___div___error;
-    }
-    
-    result = (SthInt* ) sth_status_frame_retval_get(st, 0);
-    if (sth_status_frame_remove(st) != STH_OK) {
-        goto sth_int___div___error;
-    }
-   
-    result->value = i1->value / i2->value;
-    sth_status_frame_retval_set (st, 0, (void *)result);
-
-sth_int___div___error:
-    return sth_status_status_get (st);
+    sth_int_new(st, ret, self->value / other->value);
+    return st->status;
 }
 
 
-static SthRet sth_int___mod___internal (SthStatus *st)
+static SthRet sth_int___mod___internal (SthStatus *st, SthInt **ret, 
+        SthInt *self, SthInt *other)
 {
-    SthInt *i1 = (SthInt *) sth_status_frame_argval_get (st, 0);
-    SthInt *i2 = (SthInt *) sth_status_frame_argval_get (st, 1);
-    SthInt *result;
-
-    if (sth_status_frame_add(st, 0, 1) != STH_OK) {
-        goto sth_int___mod___error;
-    }
-
-    if (sth_int_new(st) != STH_OK) {
-        goto sth_int___mod___error;
-    }
-    
-    result = (SthInt* ) sth_status_frame_retval_get(st, 0);
-    if (sth_status_frame_remove(st) != STH_OK) {
-        goto sth_int___mod___error;
-    }
-   
-    result->value = i1->value % i2->value;
-    sth_status_frame_retval_set (st, 0, (void *)result);
-
-sth_int___mod___error:
-    return sth_status_status_get (st);
+    sth_int_new(st, ret, self->value % other->value);
+    return st->status;
 }
 
 
-static SthRet sth_int___lt___internal (SthStatus *st)
+static SthRet sth_int___lt___internal (SthStatus *st, SthBool **ret, 
+        SthInt *self, SthInt *other)
 {
-    SthInt *i1 = (SthInt *) sth_status_frame_argval_get (st, 0);
-    SthInt *i2 = (SthInt *) sth_status_frame_argval_get (st, 1);
-    SthBool *result;
-
-    if (sth_status_frame_add(st, 0, 1) != STH_OK) {
-        goto sth_int___lt___error;
-    }
-
-    if (sth_bool_new(st) != STH_OK) {
-        goto sth_int___lt___error;
-    }
-    
-    result = (SthBool* ) sth_status_frame_retval_get(st, 0);
-    if (sth_status_frame_remove(st) != STH_OK) {
-        goto sth_int___lt___error;
-    }
-   
-    result->value = i1->value < i2->value;
-    sth_status_frame_retval_set (st, 0, (void *)result);
-
-sth_int___lt___error:
-    return sth_status_status_get (st);
+    *ret = (self->value < other->value) ? Sth_True : Sth_False;
+    return st->status;
 }
 
 
-static SthRet sth_int___eq___internal (SthStatus *st)
+static SthRet sth_int___eq___internal (SthStatus *st, SthBool **ret, 
+        SthInt *self, SthInt *other)
 {
-    SthInt *i1 = (SthInt *) sth_status_frame_argval_get (st, 0);
-    SthInt *i2 = (SthInt *) sth_status_frame_argval_get (st, 1);
-    SthBool *result;
-
-    if (sth_status_frame_add(st, 0, 1) != STH_OK) {
-        goto sth_int___eq___error;
-    }
-
-    if (sth_bool_new(st) != STH_OK) {
-        goto sth_int___eq___error;
-    }
-    
-    result = (SthBool* ) sth_status_frame_retval_get(st, 0);
-    if (sth_status_frame_remove(st) != STH_OK) {
-        goto sth_int___eq___error;
-    }
-   
-    result->value = i1->value == i2->value;
-    sth_status_frame_retval_set (st, 0, (void *)result);
-
-sth_int___eq___error:
-    return sth_status_status_get (st);
+    *ret = (self->value == other->value) ? Sth_True : Sth_False;
+    return st->status;
 }
 
 
-static SthRet sth_int___le___internal (SthStatus *st)
+static SthRet sth_int___le___internal (SthStatus *st, SthBool **ret, 
+        SthInt *self, SthInt *other)
 {
-    SthInt *i1 = (SthInt *) sth_status_frame_argval_get (st, 0);
-    SthInt *i2 = (SthInt *) sth_status_frame_argval_get (st, 1);
-    SthBool *result;
-
-    if (sth_status_frame_add(st, 0, 1) != STH_OK) {
-        goto sth_int___le__error;
-    }
-
-    if (sth_bool_new(st) != STH_OK) {
-        goto sth_int___le__error;
-    }
-    
-    result = (SthBool* ) sth_status_frame_retval_get(st, 0);
-    if (sth_status_frame_remove(st) != STH_OK) {
-        goto sth_int___le__error;
-    }
-   
-    result->value = i1->value <= i2->value;
-    sth_status_frame_retval_set (st, 0, (void *)result);
-
-sth_int___le__error:
-    return sth_status_status_get (st);
+    *ret = (self->value <= other->value) ? Sth_True : Sth_False;
+    return st->status;
 }
 
 
-SthRet sth_int_new (SthStatus *st)
+static SthInt int_cache_table[] = {
+    STH_MAKE_INT(0),
+    STH_MAKE_INT(1),
+    STH_MAKE_INT(2),
+    STH_MAKE_INT(3),
+    STH_MAKE_INT(4),
+    STH_MAKE_INT(5),
+    STH_MAKE_INT(6),
+    STH_MAKE_INT(7),
+    STH_MAKE_INT(8),
+    STH_MAKE_INT(9),
+    STH_MAKE_INT(10),
+    STH_MAKE_INT(11),
+    STH_MAKE_INT(12),
+    STH_MAKE_INT(13),
+    STH_MAKE_INT(14),
+    STH_MAKE_INT(15),
+    STH_MAKE_INT(16),
+    STH_MAKE_INT(17),
+    STH_MAKE_INT(18),
+    STH_MAKE_INT(19),
+    STH_MAKE_INT(20),
+    STH_MAKE_INT(21),
+    STH_MAKE_INT(22),
+    STH_MAKE_INT(23),
+    STH_MAKE_INT(24),
+    STH_MAKE_INT(25),
+    STH_MAKE_INT(26),
+    STH_MAKE_INT(27),
+    STH_MAKE_INT(28),
+    STH_MAKE_INT(29),
+    STH_MAKE_INT(30),
+    STH_MAKE_INT(31),
+    STH_MAKE_INT(32),
+    STH_MAKE_INT(33),
+    STH_MAKE_INT(34),
+    STH_MAKE_INT(35),
+    STH_MAKE_INT(36),
+    STH_MAKE_INT(37),
+    STH_MAKE_INT(38),
+    STH_MAKE_INT(39),
+    STH_MAKE_INT(40),
+    STH_MAKE_INT(41),
+    STH_MAKE_INT(42),
+    STH_MAKE_INT(43),
+    STH_MAKE_INT(44),
+    STH_MAKE_INT(45),
+    STH_MAKE_INT(46),
+    STH_MAKE_INT(47),
+    STH_MAKE_INT(48),
+    STH_MAKE_INT(49),
+    STH_MAKE_INT(50),
+    STH_MAKE_INT(51),
+    STH_MAKE_INT(52),
+    STH_MAKE_INT(53),
+    STH_MAKE_INT(54),
+    STH_MAKE_INT(55),
+    STH_MAKE_INT(56),
+    STH_MAKE_INT(57),
+    STH_MAKE_INT(58),
+    STH_MAKE_INT(59),
+    STH_MAKE_INT(60),
+    STH_MAKE_INT(61),
+    STH_MAKE_INT(62),
+    STH_MAKE_INT(63),
+    STH_MAKE_INT(64),
+    STH_MAKE_INT(65),
+    STH_MAKE_INT(66),
+    STH_MAKE_INT(67),
+    STH_MAKE_INT(68),
+    STH_MAKE_INT(69),
+    STH_MAKE_INT(70),
+    STH_MAKE_INT(71),
+    STH_MAKE_INT(72),
+    STH_MAKE_INT(73),
+    STH_MAKE_INT(74),
+    STH_MAKE_INT(75),
+    STH_MAKE_INT(76),
+    STH_MAKE_INT(77),
+    STH_MAKE_INT(78),
+    STH_MAKE_INT(79),
+    STH_MAKE_INT(80),
+    STH_MAKE_INT(81),
+    STH_MAKE_INT(82),
+    STH_MAKE_INT(83),
+    STH_MAKE_INT(84),
+    STH_MAKE_INT(85),
+    STH_MAKE_INT(86),
+    STH_MAKE_INT(87),
+    STH_MAKE_INT(88),
+    STH_MAKE_INT(89),
+    STH_MAKE_INT(90),
+    STH_MAKE_INT(91),
+    STH_MAKE_INT(92),
+    STH_MAKE_INT(93),
+    STH_MAKE_INT(94),
+    STH_MAKE_INT(95),
+    STH_MAKE_INT(96),
+    STH_MAKE_INT(97),
+    STH_MAKE_INT(98),
+    STH_MAKE_INT(99)
+};
+
+
+SthRet sth_int_new (SthStatus *st, SthInt **ret, long value)
 {
-    SthInt *i = malloc (sizeof (SthInt));
-    if (!i) {
-        sth_status_status_set (st, STH_ERR_MEM);
-        goto sth_int_new_error;
+    if (0 <= value && value < 100) {
+        *ret = &(int_cache_table[value]);
+    } else if ((*ret = malloc (sizeof (SthInt)))) {
+        (*ret)->free = sth_int_free_internal;
+        (*ret)->__craw__= sth_int___craw___internal;
+        (*ret)->__add__= sth_int___add___internal;
+        (*ret)->__sub__= sth_int___sub___internal;
+        (*ret)->__mul__= sth_int___mul___internal;
+        (*ret)->__div__= sth_int___div___internal;
+        (*ret)->__mod__= sth_int___mod___internal;
+        (*ret)->__lt__= sth_int___lt___internal;
+        (*ret)->__le__= sth_int___le___internal;
+        (*ret)->__eq__= sth_int___eq___internal;
+        (*ret)->value = value;
+    } else {
+        st->status = STH_ERR_MEM;
     }
-    i->free = sth_int_free_internal;
-    i->__craw__= sth_int___craw___internal;
-    i->__add__= sth_int___add___internal;
-    i->__sub__= sth_int___sub___internal;
-    i->__mul__= sth_int___mul___internal;
-    i->__div__= sth_int___div___internal;
-    i->__mod__= sth_int___mod___internal;
-    i->__lt__= sth_int___lt___internal;
-    i->__le__= sth_int___le___internal;
-    i->__eq__= sth_int___eq___internal;
-    sth_status_frame_retval_set (st, 0, i);
 
-    return sth_status_status_get (st);
-
-sth_int_new_error:
-    return sth_status_status_get (st);
-}
-
-
-SthRet sth_int_free (SthStatus *st)
-{
-    void *i = sth_status_frame_argval_get (st, 0);
-    sth_int_free_internal (i);
-
-    return sth_status_status_get (st);
+    return st->status;
 }

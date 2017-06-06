@@ -12,8 +12,8 @@ typedef struct {
 } SthBool;
 
 
-SthRet sth_bool_new (SthStatus *st);
-SthRet sth_bool_free (SthStatus *st);
+extern SthBool *Sth_True;
+extern SthBool *Sth_False;
 
 
 #endif /* STH_BUILTINS_BOOL_H */

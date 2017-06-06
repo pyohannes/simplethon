@@ -12,14 +12,10 @@ class InitializeConstants(ast.RecursiveNodeVisitor):
     def _make_constant_init(self, node, tp, value):
         func = self.make_name('sth_%s_new' % node.tp.name, node)
         func.tp = types.Function(collections.OrderedDict(), tp)
-        call = ast.Call(func=func, keywords=[], args=[])
+        call = ast.Call(func=func, keywords=[], args=[value])
         call.tp = call.func.tp.returns
         name = self.make_anonym_assign(call)
         name.tp = node.tp
-        attr = self.make_attr(name, 'value')
-        attr.tp = node.tp
-        ass = self.make_assign(attr, value)
-        self.add_in_parent_stmt_list(ass)
         self.replace_in_parent(node, name)
 
     def visit_num(self, node):
@@ -27,8 +23,9 @@ class InitializeConstants(ast.RecursiveNodeVisitor):
 
     def visit_nameconstant(self, node):
         if isinstance(node.value, bool):
-            value = ast.Num(n=1 if node.value else 0)
-            self._make_constant_init(node, types.bool_, value)
+            val = ast.Name('Sth_True' if node.value else 'Sth_False', node)
+            val.tp = node.tp
+            self.replace_in_parent(node, val)
 
 
 class BoolIfAttrs(ast.RecursiveNodeVisitor):
@@ -59,23 +56,22 @@ class FunctionArgumentsInStatus(ast.RecursiveNodeVisitor):
         self._statusobj = self.make_name(None, node)
         self._statusobj.tp = types.Custom('SthStatus')
         self._gotoreturn = self.make_goto(self.make_name(None, node))
+        self._returnobj = self.make_name(None, node)
+        self._returnobjptr = self.make_pointer(self._returnobj, node)
+        if node.tp.returns:
+            self._returnobjptr.tp = self._returnobj.tp = node.tp.returns
+        else:
+            self._returnobjptr.tp = self._returnobj.tp = types.craw
+        returntp = self.make_name(self._returnobj.tp.name, node)
 
-        # add arguments
-        for pos, arg in enumerate(node.args.args):
-            call = self.make_funcall(
-                    'sth_status_frame_argval_get',
-                    [ self._statusobj, ast.Num(n=pos) ],
-                    noprepare=True)
-            ass = self.make_assign(node.sp[arg.arg], call, noprepare=True)
-            node.body.insert(pos, ass)
-
-        # replace arguments
+        # add SthStatus and return object
         statusarg = ast.arg(arg=self._statusobj, annotation=self._statustp)
-        node.args.args = [ statusarg ]
+        returnarg = ast.arg(arg=self._returnobjptr, annotation=returntp)
+        node.args.args.insert(0, statusarg)
+        node.args.args.insert(1, returnarg)
 
         # add final return
-        statusret = self.make_funcall('sth_status_status_get', 
-                [ self._statusobj ], noprepare=True)
+        statusret = self.make_attr(self._statusobj, 'status')
         ret = self.make_return(statusret, noprepare=True)
         gotol = ast.GotoLabel(name=self._gotoreturn.value.name)
         node.body.extend([ gotol, ret ])
@@ -120,48 +116,27 @@ class FunctionArgumentsInStatus(ast.RecursiveNodeVisitor):
             super(FunctionArgumentsInStatus, self).generic_visit(node)
 
     def visit_call(self, node, assign=None):
-        stmts = []
-
-        # new frame 
-        newf_args = [
-                self._statusobj,
-                ast.Num(n=len(node.func.tp.args)),
-                ast.Num(n=1 if node.func.tp.returns else 0) ]
-        stmts.append(self.make_checked_funcall('sth_status_frame_add', 
-            newf_args))
-
         # set arguments, add self in case of class invocations
-        args = node.args
+        node.args.insert(0, self._statusobj)
+        if assign:
+            retobj = assign.targets[0]
+        else:
+            retobj = self.make_name(None, node)
+            retobj.tp = types.craw
+        node.args.insert(1, self.make_dereference(retobj, node))
         if isinstance(node.func, ast.Attribute):
-            args.insert(0, node.func.value)
-        for index, arg in enumerate(args):
-            stmts.append(self.make_funcall(
-                    'sth_status_frame_argval_set',
-                    [ self._statusobj, ast.Num(n=index), arg ],
-                    expr=True))
+            node.args.insert(2, node.func.value)
 
         # call function
-        stmts.append(self.make_checked_funcall(node.func, [ self._statusobj ]))
+        call = self.make_checked_funcall(node.func, node.args)
 
-        # set target
-        if assign:
-            call = self.make_funcall(
-                    'sth_status_frame_retval_get',
-                    [ self._statusobj, ast.Num(n=0) ])
-            stmts.append(self.make_assign(assign.targets[0], call))
-
-        # free frame 
-        stmts.append(self.make_checked_funcall('sth_status_frame_remove',
-            [ self._statusobj ]))
-
-        self.replace_in_parent(assign or node, stmts)
+        self.replace_in_parent(assign or node, call)
 
     def visit_return(self, node):
-        retval = self.make_funcall(
-                'sth_status_frame_retval_set',
-                [ self._statusobj, ast.Num(n=0), node.value ],
-                expr=True)
-        self.replace_in_parent(node, [ retval, self._gotoreturn ])
+        target = self.make_pointer(self._returnobj, node)
+        target.tp = self._returnobj.tp
+        retass = self.make_assign(target, node.value)
+        self.replace_in_parent(node, [ retass, self._gotoreturn ])
 
 
 def prepare(tree):

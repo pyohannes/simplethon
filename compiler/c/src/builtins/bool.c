@@ -1,21 +1,18 @@
-#include <stdlib.h>
 #include "sth/builtins/bool.h"
 #include "sth/status.h"
 
 
-static void sth_bool_free_internal (void *obj)
+static SthRet sth_bool_free_internal (void *obj)
 {
-    if (obj) {
-        free (obj);
-    }
+    return STH_OK;
 }
 
 
-static SthRet sth_bool___craw___internal (SthStatus *st)
+static SthRet sth_bool___craw___internal (SthStatus *st, SthCraw **ret, 
+        SthObject *b)
 {
-    SthBool *i = (SthBool *) sth_status_frame_argval_get (st, 0);
-    sth_status_frame_retval_set (st, 0, i);
-    return sth_status_status_get (st);
+    *ret = (SthCraw *)b;
+    return st->status;
 }
 
 /*
@@ -48,28 +45,19 @@ sth_bool___add___error:
 */
 
 
-SthRet sth_bool_new (SthStatus *st)
-{
-    SthBool *i = malloc (sizeof (SthBool));
-    if (!i) {
-        sth_status_status_set (st, STH_ERR_MEM);
-        goto sth_bool_new_error;
-    }
-    i->free = sth_bool_free_internal;
-    i->__craw__= sth_bool___craw___internal;
-    sth_status_frame_retval_set (st, 0, i);
-
-    return sth_status_status_get (st);
-
-sth_bool_new_error:
-    return sth_status_status_get (st);
-}
+static SthBool Sth_True_ = { 
+    sth_bool_free_internal,
+    sth_bool___craw___internal,
+    1
+};
 
 
-SthRet sth_bool_free (SthStatus *st)
-{
-    void *i = sth_status_frame_argval_get (st, 0);
-    sth_bool_free_internal (i);
+static SthBool Sth_False_ = { 
+    sth_bool_free_internal,
+    sth_bool___craw___internal,
+    0
+};
 
-    return sth_status_status_get (st);
-}
+
+SthBool *Sth_True = &Sth_True_;
+SthBool *Sth_False = &Sth_False_;

@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include "sth/base.h"
-#include "sth/frame.h"
 #include "sth/status.h"
 #include "sth/builtins/bool.h"
 #include "sth/builtins/free.h"

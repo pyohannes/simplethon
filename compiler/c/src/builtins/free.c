@@ -2,17 +2,15 @@
 #define STH_BUILTINS_FREE_H
 
 #include <stdio.h>
-#include "sth/builtins/print.h"
+#include "sth/base.h"
 #include "sth/builtins/int.h"
 
 
-SthRet sth_free (SthStatus *st)
+SthRet sth_free (SthStatus *st, SthCraw **ret, SthObject *obj)
 {
-    SthObject *i = (SthObject *) sth_status_frame_argval_get (st, 0);
+    obj->free (obj);
 
-    i->free (i);
-
-    return sth_status_status_get (st);
+    return st->status;
 }
 
 
