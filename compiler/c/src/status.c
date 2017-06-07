@@ -4,8 +4,7 @@
 
 SthRet sth_status_new (SthStatus **st)
 {
-    *st = malloc (sizeof (SthStatus));
-    if (!*st) {
+    if (!(*st = malloc (sizeof (SthStatus)))) {
         return STH_ERR_MEM;
     }
 

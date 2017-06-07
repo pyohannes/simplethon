@@ -5,11 +5,13 @@
 #include "sth/status.h"
 
 
-typedef struct SthObject_ SthObject;
 
 #define STH_OBJECT_MEMBERS \
     SthRet (*free)(void *); \
     SthRet (*__craw__)(SthStatus *, SthCraw **, SthObject *);
+
+
+typedef struct SthObject_ SthObject;
 
 
 struct SthObject_ {

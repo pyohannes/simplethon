@@ -6,18 +6,25 @@
 #include "sth/object.h"
 #include "sth/builtins/bool.h"
 
+
 typedef struct SthInt_ SthInt;
+
+
+typedef SthRet (*SthFP_IntInt_Int)(SthStatus *, SthInt **, SthInt*, SthInt*);
+typedef SthRet (*SthFP_IntInt_Bool)(SthStatus *, SthBool **, SthInt*, 
+        SthInt*);
+
 
 struct SthInt_{
     STH_OBJECT_MEMBERS
-    SthRet (*__add__)(SthStatus *st, SthInt **ret, SthInt *self, SthInt *other);
-    SthRet (*__sub__)(SthStatus *st, SthInt **ret, SthInt *self, SthInt *other);
-    SthRet (*__mul__)(SthStatus *st, SthInt **ret, SthInt *self, SthInt *other);
-    SthRet (*__div__)(SthStatus *st, SthInt **ret, SthInt *self, SthInt *other);
-    SthRet (*__mod__)(SthStatus *st, SthInt **ret, SthInt *self, SthInt *other);
-    SthRet (*__lt__)(SthStatus *st, SthBool **ret, SthInt *self, SthInt *other);
-    SthRet (*__le__)(SthStatus *st, SthBool **ret, SthInt *self, SthInt *other);
-    SthRet (*__eq__)(SthStatus *st, SthBool **ret, SthInt *self, SthInt *other);
+    SthFP_IntInt_Int __add__;
+    SthFP_IntInt_Int __sub__;
+    SthFP_IntInt_Int __mul__;
+    SthFP_IntInt_Int __div__;
+    SthFP_IntInt_Int __mod__;
+    SthFP_IntInt_Bool __lt__;
+    SthFP_IntInt_Bool __le__;
+    SthFP_IntInt_Bool __eq__;
     long value;
 };
 

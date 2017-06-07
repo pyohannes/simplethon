@@ -17,12 +17,18 @@
        sth_int___eq___internal, \
        val }
 
+#define STH_INT_CACHE_MIN 0
+#define STH_INT_CACHE_MAX 99
+
+#define STH_INT_CACHE_CONTAINS(x) \
+    ((x) >= STH_INT_CACHE_MIN && (x) <= STH_INT_CACHE_MAX)
+
 
 static SthRet sth_int_free_internal (void *obj)
 {
     SthInt *i = (SthInt *)obj;
 
-    if (i && (i->value < 0 || i->value > 100)) {
+    if (i && !STH_INT_CACHE_CONTAINS(i->value)) {
         free (obj);
     }
 
@@ -41,7 +47,7 @@ static SthRet sth_int___craw___internal (SthStatus *st, SthCraw **ret,
 static SthRet sth_int___add___internal (SthStatus *st, SthInt **ret, 
         SthInt *self, SthInt *other)
 {
-    sth_int_new(st, ret, self->value + other->value);
+    sth_int_new (st, ret, self->value + other->value);
     return st->status;
 }
 
@@ -49,7 +55,7 @@ static SthRet sth_int___add___internal (SthStatus *st, SthInt **ret,
 static SthRet sth_int___sub___internal (SthStatus *st, SthInt **ret, 
         SthInt *self, SthInt *other)
 {
-    sth_int_new(st, ret, self->value - other->value);
+    sth_int_new (st, ret, self->value - other->value);
     return st->status;
 }
 
@@ -57,7 +63,7 @@ static SthRet sth_int___sub___internal (SthStatus *st, SthInt **ret,
 static SthRet sth_int___mul___internal (SthStatus *st, SthInt **ret, 
         SthInt *self, SthInt *other)
 {
-    sth_int_new(st, ret, self->value * other->value);
+    sth_int_new (st, ret, self->value * other->value);
     return st->status;
 }
 
@@ -65,7 +71,7 @@ static SthRet sth_int___mul___internal (SthStatus *st, SthInt **ret,
 static SthRet sth_int___div___internal (SthStatus *st, SthInt **ret, 
         SthInt *self, SthInt *other)
 {
-    sth_int_new(st, ret, self->value / other->value);
+    sth_int_new (st, ret, self->value / other->value);
     return st->status;
 }
 
@@ -73,7 +79,7 @@ static SthRet sth_int___div___internal (SthStatus *st, SthInt **ret,
 static SthRet sth_int___mod___internal (SthStatus *st, SthInt **ret, 
         SthInt *self, SthInt *other)
 {
-    sth_int_new(st, ret, self->value % other->value);
+    sth_int_new (st, ret, self->value % other->value);
     return st->status;
 }
 
@@ -208,7 +214,7 @@ static SthInt int_cache_table[] = {
 
 SthRet sth_int_new (SthStatus *st, SthInt **ret, long value)
 {
-    if (0 <= value && value < 100) {
+    if (STH_INT_CACHE_CONTAINS(value)) {
         *ret = &(int_cache_table[value]);
     } else if ((*ret = malloc (sizeof (SthInt)))) {
         (*ret)->free = sth_int_free_internal;
