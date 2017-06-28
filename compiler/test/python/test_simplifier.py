@@ -293,6 +293,27 @@ def main(args: List[str]) -> int:
 """, 0)
 
 
+def test_class_strtypes():
+    assert_simplify(
+"""class X():
+    def __init__(self: 'X'):
+        self.x = 9
+
+    def get_self(self: 'X') -> 'X':
+        return self
+""",
+"""
+
+class X():
+
+    def __init__(self: X):
+        self.x = 9
+
+    def get_self(self: X) -> X:
+        return self
+""", 0)
+
+
 def test_primes_example():
     assert_simplify(
 """def isprime(n: int) -> bool:

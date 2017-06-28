@@ -120,12 +120,28 @@ class ReduceNestedCalls(ast.RecursiveNodeVisitor):
             node.func.value = self.make_anonym_assign(node.func.value)
 
 
+class EvaluateStringTypes(ast.RecursiveNodeVisitor):
+
+    def __init__(self):
+        super(EvaluateStringTypes, self).__init__(None)
+
+    def visit_arg(self, node):
+        if isinstance(node.annotation, ast.Str):
+            node.annotation = ast.parse(node.annotation.s).body[0].value
+
+
+    def visit_functiondef(self, node):
+        if isinstance(node.returns, ast.Str):
+            node.returns = ast.parse(node.returns.s).body[0].value
+
+
 def simplify(tree):
     for cls in (
             ReduceOperations,
             ReduceOperations,
             ReduceControlStructures,
-            ReduceNestedCalls
+            ReduceNestedCalls,
+            EvaluateStringTypes
             ):
         cls().visit(tree)
     return tree

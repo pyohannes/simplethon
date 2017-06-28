@@ -60,18 +60,6 @@ def test_restrict_assert():
 """)
 
 
-def test_restrict_class():
-    assert_raises_syntax_error(
-"""class C():
-    def __init__(self: C):
-        self.x = 3
-
-
-def main(args: List[str]) -> int:
-    return 0
-""")
-
-
 def test_restrict_del():
     assert_raises_syntax_error(
 """def main(args: List[str]) -> int:

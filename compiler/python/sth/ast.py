@@ -184,14 +184,14 @@ class RestrictKeywords(RecursiveNodeVisitor):
     __unsupported__ = (
             And, Assert, AsyncFor, AsyncFunctionDef, 
             AsyncWith, Await, BitAnd, BitOr, BitXor,
-            ClassDef, Del, Dict, DictComp, Ellipsis,
+            Del, Dict, DictComp, Ellipsis,
             ExceptHandler, ExtSlice, FloorDiv, For, 
             FormattedValue, GeneratorExp, Global, Import,
             ImportFrom, In, Interactive, Invert, Is,
             IsNot, LShift, Lambda, List, ListComp,
             Nonlocal, Not, MatMult, NotIn, Or, Pass,
             Pow, RShift, Raise, Set, SetComp, Slice,
-            Starred, Str, Try, Tuple, With, Yield,
+            Starred, Try, Tuple, With, Yield,
             YieldFrom
             )
 
