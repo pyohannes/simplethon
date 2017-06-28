@@ -63,7 +63,7 @@ class ReduceControlStructures(ast.RecursiveNodeVisitor):
 
     def __init__(self):
         super(ReduceControlStructures, self).__init__(
-                None, children_first=True)
+                None, bottomup=True)
 
     def visit_while(self, node):
         stmts = []
@@ -100,7 +100,7 @@ class ReduceControlStructures(ast.RecursiveNodeVisitor):
 class ReduceNestedCalls(ast.RecursiveNodeVisitor):
 
     def __init__(self):
-        super(ReduceNestedCalls, self).__init__(None, children_first=True)
+        super(ReduceNestedCalls, self).__init__(None, bottomup=True)
 
     def visit_return(self, node):
         if isinstance(node.value, ast.Call):

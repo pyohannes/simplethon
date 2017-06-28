@@ -49,10 +49,10 @@ class RecursiveNodeVisitor(NodeVisitor):
     __scopefields__ = (
             'body', 'orelse')
 
-    def __init__(self, filename, children_first=False):
+    def __init__(self, filename, bottomup=False):
         super(RecursiveNodeVisitor, self).__init__()
         self.filename = filename
-        self.children_first = children_first
+        self.bottomup = bottomup
         self.current_lineno = 0
         self.current_col_offset = 0
         self.path = []
@@ -65,11 +65,11 @@ class RecursiveNodeVisitor(NodeVisitor):
                 self.current_lineno = node.lineno
                 self.current_col_offset = node.col_offset
             except AttributeError: pass
-            if not self.children_first:
+            if not self.bottomup:
                 ret = super(RecursiveNodeVisitor, self).visit(node)
             for n in iter_child_nodes(node):
                 self.visit(n)
-            if self.children_first:
+            if self.bottomup:
                 ret = super(RecursiveNodeVisitor, self).visit(node)
         finally:
             self.path.pop()

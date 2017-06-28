@@ -89,7 +89,7 @@ class TypifyFunctions(ast.RecursiveNodeVisitor):
 
     def __init__(self):
         super(TypifyFunctions, self).__init__(filename=None, 
-                children_first=True)
+                bottomup=True)
 
     def visit_functiondef(self, node):
         tp_args = collections.OrderedDict()
@@ -104,7 +104,7 @@ class TypifyFunctions(ast.RecursiveNodeVisitor):
 class Typify(ast.RecursiveNodeVisitor):
 
     def __init__(self):
-        super(Typify, self).__init__(filename=None, children_first=True)
+        super(Typify, self).__init__(filename=None, bottomup=True)
 
     def visit_num(self, node):
         if isinstance(node.n, int):
@@ -132,7 +132,7 @@ class Typify(ast.RecursiveNodeVisitor):
 class Convert(ast.RecursiveNodeVisitor):
 
     def __init__(self):
-        super(Convert, self).__init__(filename=None, children_first=True)
+        super(Convert, self).__init__(filename=None, bottomup=True)
 
     def visit_assign(self, node):
         target = node.targets[0]

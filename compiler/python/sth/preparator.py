@@ -40,7 +40,6 @@ class BoolIfAttrs(ast.RecursiveNodeVisitor):
             node.test.tp = tp
 
 
-
 class FunctionArgumentsInStatus(ast.RecursiveNodeVisitor):
 
     def __init__(self):
