@@ -26,8 +26,9 @@ def _execute(cmd):
 def make_doc():
     _ensure_objdir()
 
-    src = [ 'python/sth/parser.py',
-            'python/sth/ast.py' ]
+    #src = [ 'python/sth/parser.py',
+    #        'python/sth/ast.py' ]
+    src = []
 
     rootdoc = 'doc/compiler.tex'
 
