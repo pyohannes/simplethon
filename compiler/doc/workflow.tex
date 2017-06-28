@@ -3,29 +3,27 @@
     \node (sthsource)   [doc]     {.sth};
     \node (parse)       [action]  {parse};
     \node (simplify)    [action]  {simplify};
-    \node (link)        [action]  {link};
     \node (typify)      [action]  {typify};
+    \node (prepare)     [action]  {prepare};
     \node (translate)   [action]  {translate};
-    \node (optimize)    [action]  {optimize};
     \node (write)       [action]  {write};
-    \node (csource)     [doc]    {.c};
+    \node (csource)     [doc]     {.c};
 
     \draw[->] (sthsource) -- (parse);
     \draw[->]     (parse) -- (simplify);
-    \draw[->]  (simplify) -- (link);
-    \draw[->]      (link) -- (typify);
-    \draw[->]    (typify) -- (translate);
-    \draw[->] (translate) -- (optimize);
-    \draw[->]  (optimize) -- (write);
+    \draw[->]  (simplify) -- (typify);
+    \draw[->]    (typify) -- (prepare);
+    \draw[->]   (prepare) -- (translate);
+    \draw[->] (translate) -- (write);
     \draw[->]     (write) -- (csource);
 
-    \draw[tuborg, decoration={brace}] let \p1=(parse.north), \p2=(link.center) in
-        ($(2, \y1 - 2)$) -- ($(2, \y2 + 2)$) node[tubnode] {Simplethon AST} ;
+    \draw[tuborg, decoration={brace}] let \p1=(parse.north), \p2=(simplify.south) in
+        ($(2, \y1 - 2)$) -- ($(2, \y2 + 2)$) node[tubnode] {lexical and syntactic analysis} ;
 
-    \draw[tuborg, decoration={brace}] let \p1=(link.center), \p2=(translate.center) in
-        ($(2, \y1 - 2)$) -- ($(2, \y2 + 2)$) node[tubnode] {Typed Simplethon AST} ;
+    \draw[tuborg, decoration={brace}] let \p1=(typify.north), \p2=(typify.south) in
+        ($(2, \y1 - 2)$) -- ($(2, \y2 + 2)$) node[tubnode] {semantic analysis} ;
 
-    \draw[tuborg, decoration={brace}] let \p1=(translate.center), \p2=(write.south) in
-        ($(2, \y1 - 2)$) -- ($(2, \y2 + 2)$) node[tubnode] {C AST} ;
+    \draw[tuborg, decoration={brace}] let \p1=(prepare.north), \p2=(write.south) in
+        ($(2, \y1 - 2)$) -- ($(2, \y2 + 2)$) node[tubnode] {code generation} ;
 
 \end{tikzpicture}
