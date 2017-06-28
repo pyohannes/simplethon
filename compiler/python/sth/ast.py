@@ -191,11 +191,14 @@ class RestrictKeywords(RecursiveNodeVisitor):
             IsNot, LShift, Lambda, List, ListComp,
             Nonlocal, Not, MatMult, NotIn, Or, Pass,
             Pow, RShift, Raise, Set, SetComp, Slice,
-            Starred, Try, Tuple, With, Yield,
+            Starred, Str, Try, Tuple, With, Yield,
             YieldFrom
             )
 
     def generic_visit(self, node):
+        if isinstance(node, ast.Str):
+            if hasattr(self.path[-1], 'annotation'):
+                return
         for cls in self.__unsupported__:
             if isinstance(node, cls):
                 self.raise_syntax_error(
