@@ -197,8 +197,9 @@ class RestrictKeywords(RecursiveNodeVisitor):
 
     def generic_visit(self, node):
         if isinstance(node, ast.Str):
-            if hasattr(self.path[-1], 'annotation'):
-                return
+            for attr in ('annotation', 'returns'):
+                if hasattr(self.path[-2], attr):
+                    return
         for cls in self.__unsupported__:
             if isinstance(node, cls):
                 self.raise_syntax_error(
