@@ -116,5 +116,14 @@ float_ = Float()
 bool_ = Bool()
 craw = CRaw()
 
+
 for t in (int_, float_, bool_):
     t.populate()
+
+
+def make_class(name):
+    c = Custom(name)
+    c.populate()
+    c.members['__new__'] = Function(collections.OrderedDict([]), c)
+    return c
+

@@ -84,7 +84,8 @@ class Unparser:
         meth = getattr(self, "_"+tree.__class__.__name__)
         meth(tree)
 
-        ignore_instances = ( 'FunctionDef', 'Assign', 'Call', 'Pointer')
+        ignore_instances = ( 'FunctionDef', 'Assign', 'Call', 'Pointer',
+                             'ClassDef')
         if hasattr(tree, 'tp'):
             if not tree.__class__.__name__ in ignore_instances:
                 if hasattr(tree.tp, 'args'):

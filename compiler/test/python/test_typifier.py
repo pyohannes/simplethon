@@ -334,6 +334,104 @@ def main{args: List[str] -> int}(args: List[str]) -> int:
 """, 0)
 
 
+def test_class_init():
+    assert_typify(
+"""
+class Point():
+    def __init__(self: 'Point', x: int, y: int):
+        self.x = x
+        self.y = y
+
+
+def main(args: List[str]) -> int:
+    c = Point(0, 0)
+    return 0
+""",
+"""
+
+class Point():
+
+    def __init__{self: Point, x: int, y: int -> }(self: Point{Point}, x: int, y: int):
+        self{Point}.x{int} = x{int}
+        self{Point}.y{int} = y{int}
+
+def main{args: List[str] -> int}(args: List[str]) -> int:
+    c{Point} = Point{Point}.__new__{ -> Point}()
+    c{Point}.__init__{self: Point, x: int, y: int -> }(0{int}, 0{int})
+    return 0{int}
+""", 0)
+
+
+def test_class_attr():
+    assert_typify(
+"""
+class Point():
+    def __init__(self: 'Point', x: int, y: int):
+        self.x = x
+        self.y = y
+
+
+def main(args: List[str]) -> int:
+    c = Point(0, 0)
+    print(c.x)
+    print(c.y)
+    return 0
+""",
+"""
+
+class Point():
+
+    def __init__{self: Point, x: int, y: int -> }(self: Point{Point}, x: int, y: int):
+        self{Point}.x{int} = x{int}
+        self{Point}.y{int} = y{int}
+
+def main{args: List[str] -> int}(args: List[str]) -> int:
+    c{Point} = Point{Point}.__new__{ -> Point}()
+    c{Point}.__init__{self: Point, x: int, y: int -> }(0{int}, 0{int})
+    sth_print{s: int -> }(c{Point}.x{int})
+    sth_print{s: int -> }(c{Point}.y{int})
+    return 0{int}
+""", 0)
+
+
+def test_class_method():
+    assert_typify(
+"""
+class Point():
+    def __init__(self: 'Point', x: int, y: int):
+        self.x = x
+        self.y = y
+
+    def print(self: 'Point'):
+        print(self.x)
+        print(self.y)
+
+
+def main(args: List[str]) -> int:
+    c = Point(0, 0)
+    c.print()
+    return 0
+""",
+"""
+
+class Point():
+
+    def __init__{self: Point, x: int, y: int -> }(self: Point{Point}, x: int, y: int):
+        self{Point}.x{int} = x{int}
+        self{Point}.y{int} = y{int}
+
+    def print{self: Point -> }(self: Point{Point}):
+        sth_print{s: int -> }(self{Point}.x{int})
+        sth_print{s: int -> }(self{Point}.y{int})
+
+def main{args: List[str] -> int}(args: List[str]) -> int:
+    c{Point} = Point{Point}.__new__{ -> Point}()
+    c{Point}.__init__{self: Point, x: int, y: int -> }(0{int}, 0{int})
+    c{Point}.print{self: Point -> }()
+    return 0{int}
+""", 0)
+
+
 def test_primes_example():
     assert_typify(
 """def isprime(n: int) -> bool:

@@ -2,6 +2,7 @@ import pytest
 from helper import assert_compiled_output_python_compat
 
 
+@pytest.mark.skipif(True, reason="Wait for class support")
 def test_simple():
     assert_compiled_output_python_compat(
 """
@@ -22,6 +23,7 @@ def main(args: List[str]) -> int :
 """, valgrind=False)
 
 
+@pytest.mark.skipif(True, reason="Wait for class support")
 def test_counter():
     assert_compiled_output_python_compat(
 """
@@ -49,6 +51,7 @@ def main(args: List[str]) -> int:
 """, valgrind=False)
 
 
+@pytest.mark.skipif(True, reason="Wait for class support")
 def test_inheritance():
     assert_compiled_output_python_compat(
 """
@@ -85,6 +88,7 @@ def main(args: List[str]) -> int:
 """, valgrind=False)
 
 
+@pytest.mark.skipif(True, reason="Wait for class support")
 def test_multiple_inheritance():
     assert_compiled_output_python_compat(
 """
@@ -125,6 +129,7 @@ def main(args: List[str]) -> int:
 """, valgrind=False)
 
 
+@pytest.mark.skipif(True, reason="Wait for class support")
 def test_polymorphism():
     assert_compiled_output_python_compat(
 """
