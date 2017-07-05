@@ -5,6 +5,11 @@ from sth.simplifier import simplify
 from sth.typifier import typify
 
 
+def assert_raises_name_error(code):
+    with pytest.raises(NameError):
+        assert_typify(code, "", 0)
+
+
 def assert_typify(src, dst, ret):
     assert unparse(typify(simplify(parse(src)))) == dst
 
@@ -351,7 +356,7 @@ def main(args: List[str]) -> int:
 
 class Point():
 
-    def __init__{self: Point, x: int, y: int -> }(self: Point{Point}, x: int, y: int):
+    def __init__{self: Point, x: int, y: int -> }(self: Point, x: int, y: int):
         self{Point}.x{int} = x{int}
         self{Point}.y{int} = y{int}
 
@@ -381,7 +386,7 @@ def main(args: List[str]) -> int:
 
 class Point():
 
-    def __init__{self: Point, x: int, y: int -> }(self: Point{Point}, x: int, y: int):
+    def __init__{self: Point, x: int, y: int -> }(self: Point, x: int, y: int):
         self{Point}.x{int} = x{int}
         self{Point}.y{int} = y{int}
 
@@ -390,6 +395,47 @@ def main{args: List[str] -> int}(args: List[str]) -> int:
     c{Point}.__init__{self: Point, x: int, y: int -> }(0{int}, 0{int})
     sth_print{s: int -> }(c{Point}.x{int})
     sth_print{s: int -> }(c{Point}.y{int})
+    return 0{int}
+""", 0)
+
+
+def test_class_attr_nested():
+    assert_typify(
+"""
+class Point():
+    def __init__(self: 'Point', x: int, y: int):
+        self.x = x
+        self.y = y
+
+class Line():
+    def __init__(self: 'Line'):
+        self.start = Point(0, 0)
+
+def main(args: List[str]) -> int:
+    l = Line()
+    print(l.start.x)
+    print(l.start.y)
+    return 0
+""",
+"""
+
+class Point():
+
+    def __init__{self: Point, x: int, y: int -> }(self: Point, x: int, y: int):
+        self{Point}.x{int} = x{int}
+        self{Point}.y{int} = y{int}
+
+class Line():
+
+    def __init__{self: Line -> }(self: Line):
+        self{Line}.start{Point} = Point{Point}.__new__{ -> Point}()
+        self{Line}.start{Point}.__init__{self: Point, x: int, y: int -> }(0{int}, 0{int})
+
+def main{args: List[str] -> int}(args: List[str]) -> int:
+    l{Line} = Line{Line}.__new__{ -> Line}()
+    l{Line}.__init__{self: Line -> }()
+    sth_print{s: int -> }(l{Line}.start{Point}.x{int})
+    sth_print{s: int -> }(l{Line}.start{Point}.y{int})
     return 0{int}
 """, 0)
 
@@ -416,11 +462,11 @@ def main(args: List[str]) -> int:
 
 class Point():
 
-    def __init__{self: Point, x: int, y: int -> }(self: Point{Point}, x: int, y: int):
+    def __init__{self: Point, x: int, y: int -> }(self: Point, x: int, y: int):
         self{Point}.x{int} = x{int}
         self{Point}.y{int} = y{int}
 
-    def print{self: Point -> }(self: Point{Point}):
+    def print{self: Point -> }(self: Point):
         sth_print{s: int -> }(self{Point}.x{int})
         sth_print{s: int -> }(self{Point}.y{int})
 
@@ -429,6 +475,26 @@ def main{args: List[str] -> int}(args: List[str]) -> int:
     c{Point}.__init__{self: Point, x: int, y: int -> }(0{int}, 0{int})
     c{Point}.print{self: Point -> }()
     return 0{int}
+""", 0)
+
+
+def test_overwrite_builtin():
+    assert_typify(
+"""
+def print(a: int, b: int, c: int) -> int:
+    return 3
+
+def main(args: List[str]) -> int:
+    return print(1, 3, 4)
+""",
+"""
+
+def print{a: int, b: int, c: int -> int}(a: int, b: int, c: int) -> int:
+    return 3{int}
+
+def main{args: List[str] -> int}(args: List[str]) -> int:
+    <genid1>{int} = print{a: int, b: int, c: int -> int}(1{int}, 3{int}, 4{int})
+    return <genid1>{int}
 """, 0)
 
 
@@ -487,3 +553,50 @@ def main{args: List[str] -> int}(args: List[str]) -> int:
     print_primes_from{start: int, end: int -> }(1{int}, 100{int})
     return 0{int}
 """, 0)
+
+
+def test_undefined_variable():
+    with pytest.raises(NameError):
+        assert_typify(
+"""
+def main(args: List[str]) -> int:
+    x = y
+    return 0
+""", "", 0)
+
+
+def test_undefined_attribute():
+    with pytest.raises(AttributeError):
+        assert_typify(
+"""
+def main(args: List[str]) -> int:
+    x = 3 .x
+    return 0
+""", "", 0)
+
+
+def test_type_conflict():
+    with pytest.raises(TypeError):
+        assert_typify(
+"""
+class Point():
+    def __init__(self: 'Point'):
+        self.x = 3
+
+def main(args: List[str]) -> int:
+    x = 3
+    x = Point()
+    return 0
+""", "", 0)
+
+
+@pytest.mark.skipif(True, reason="Wait for full class support")
+def test_attribute_unavailable():
+    with pytest.raises(AttributeError):
+        assert_typify(
+"""
+def main(args: List[str]) -> int:
+    x = 3
+    3.x = 9
+    return 0
+""", "", 0)

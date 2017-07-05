@@ -1,4 +1,9 @@
 ####+
+#```((mode docu) (post ("replace-variables")))
+# \newpage
+# \section{\tc{``(file-basename)``} - Lexer and Parser}
+#```
+
 import ast
 from ast import *
 from _ast import arg
