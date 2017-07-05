@@ -75,7 +75,7 @@ class Unparser:
         "Decrease the indentation level."
         self._indent -= 1
 
-    def dispatch(self, tree):
+    def dispatch(self, tree, printtp=True):
         "Dispatcher function, dispatching tree type T to method _T."
         if isinstance(tree, list):
             for t in tree:
@@ -86,7 +86,7 @@ class Unparser:
 
         ignore_instances = ( 'FunctionDef', 'Assign', 'Call', 'Pointer',
                              'ClassDef')
-        if hasattr(tree, 'tp'):
+        if hasattr(tree, 'tp') and printtp:
             if not tree.__class__.__name__ in ignore_instances:
                 if hasattr(tree.tp, 'args'):
                     # duck typing: types.Function
@@ -165,7 +165,7 @@ class Unparser:
         if not t.simple:
             self.write(")")
         self.write(": ")
-        self.dispatch(t.annotation)
+        self.dispatch(t.annotation, printtp=False)
         if t.value:
             self.write(" = ")
             self.dispatch(t.value)
@@ -368,7 +368,7 @@ class Unparser:
         self.write(")")
         if getattr(t, "returns", False):
             self.write(" -> ")
-            self.dispatch(t.returns)
+            self.dispatch(t.returns, printtp=False)
         self.enter()
         self.dispatch(t.body)
         self.leave()
@@ -703,7 +703,7 @@ class Unparser:
             self.write(t.arg)
         if t.annotation:
             self.write(": ")
-            self.dispatch(t.annotation)
+            self.dispatch(t.annotation, printtp=False)
 
     # others
     def _arguments(self, t):
@@ -728,12 +728,12 @@ class Unparser:
                     self.write(t.vararg.arg)
                     if t.vararg.annotation:
                         self.write(": ")
-                        self.dispatch(t.vararg.annotation)
+                        self.dispatch(t.vararg.annotation, printtp=False)
                 else:
                     self.write(t.vararg)
                     if getattr(t, 'varargannotation', None):
                         self.write(": ")
-                        self.dispatch(t.varargannotation)
+                        self.dispatch(t.varargannotation, printtp=False)
 
         # keyword-only arguments
         if getattr(t, "kwonlyargs", False):
@@ -753,12 +753,12 @@ class Unparser:
                 self.write("**"+t.kwarg.arg)
                 if t.kwarg.annotation:
                     self.write(": ")
-                    self.dispatch(t.kwarg.annotation)
+                    self.dispatch(t.kwarg.annotation, printtp=False)
             else:
                 self.write("**"+t.kwarg)
                 if getattr(t, 'kwargannotation', None):
                     self.write(": ")
-                    self.dispatch(t.kwargannotation)
+                    self.dispatch(t.kwargannotation, printtp=False)
 
     def _keyword(self, t):
         if t.arg is None:
