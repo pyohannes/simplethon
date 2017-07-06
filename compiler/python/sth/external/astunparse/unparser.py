@@ -31,7 +31,7 @@ class GenerateId(dict):
 
     def __getitem__(self, key):
         if not key in self:
-            name = '<genid%d>' % self.counter
+            name = 'id@%d' % self.counter
             self[key] = name
             self.counter += 1
         return super(GenerateId, self).__getitem__(key)
