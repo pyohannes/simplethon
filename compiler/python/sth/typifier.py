@@ -38,11 +38,10 @@ from sth import ast, types, builtins
 #```
 def annotation_to_type(node, sp):
     if isinstance(node, ast.Subscript):
-        return types.Collection(
-                node.value.id,
+        return types.List(
                 [ node.slice.value.id ])
     elif isinstance(node, ast.Name):
-        return sp[node.id].tp
+        return sp[node.id].tp.tp
 #```
 # The \tc{\_ClassHandlingMixin} provides some helper functions for dealing with
 # classes. The function \tc{is\_node\_in\_class} tests if the current node is an
@@ -158,7 +157,7 @@ class LinkVariables(ast.RecursiveNodeVisitor, _ClassHandlingMixin):
             node.sp[b.name] = b.sthname
         for t in ('int', 'float', 'bool'):
             name = self.make_name(t, None)
-            name.tp = getattr(types, '%s_' % t)
+            name.tp = getattr(types, '%s_' % t).clstp
             node.sp[t] = name
         node.sp['List'] = self.make_name('List', None)
         node.sp['str'] = self.make_name('str', None)
@@ -227,7 +226,7 @@ class CreateClassFunctionTypes(ast.RecursiveNodeVisitor, _ClassHandlingMixin):
 # \tc{types.CustomType}.
 #```
     def visit_classdef(self, node):
-        node.tp = types.make_class(node.name)
+        node.tp = types.make_class(node.name).clstp
         node.sp[node.name].tp = node.tp
 #```
 # For function definitions a new type object \tc{types.Function} is created and
@@ -246,7 +245,7 @@ class CreateClassFunctionTypes(ast.RecursiveNodeVisitor, _ClassHandlingMixin):
         tp_returns = annotation_to_type(node.returns, node.sp)
         node.tp = types.Function(tp_args, tp_returns)
         if self.is_node_in_class():
-            self.get_class_tp().members[node.name] = node.tp
+            self.get_class_tp().tp.members[node.name] = node.tp
         else:
             node.sp[node.name].tp = node.tp
 #```
@@ -281,7 +280,7 @@ class ReduceClassInitialization(ast.RecursiveNodeVisitor, _ClassHandlingMixin):
         if isinstance(call, ast.Call) and isinstance(call.func, ast.Name):
             try:
                 cls = call.sp[call.func.id]
-                return cls and isinstance(cls.tp, types.Custom)
+                return cls and isinstance(cls.tp, types.Class)
             except:
                 return False
 
@@ -360,8 +359,9 @@ class Typify(ast.RecursiveNodeVisitor, _ClassHandlingMixin):
     def visit_assign(self, node):
         target = node.targets[0]
         if isinstance(target, ast.Attribute):
-            if not target.attr in target.value.tp.members:
-                target.tp = target.value.tp.members[target.attr] = node.value.tp
+            clsmembers = target.value.tp.members
+            if not target.attr in clsmembers:
+                target.tp = clsmembers[target.attr] = node.value.tp
         else:
             if not hasattr(target, 'tp'):
                 target.tp = node.value.tp

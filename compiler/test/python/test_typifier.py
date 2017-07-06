@@ -361,7 +361,7 @@ class Point():
         self{Point}.y{int} = y{int}
 
 def main{args: List[str] -> int}(args: List[str]) -> int:
-    c{Point} = Point{Point}.__new__{ -> Point}()
+    c{Point} = Point{class[Point]}.__new__{ -> Point}()
     c{Point}.__init__{self: Point, x: int, y: int -> }(0{int}, 0{int})
     return 0{int}
 """, 0)
@@ -391,7 +391,7 @@ class Point():
         self{Point}.y{int} = y{int}
 
 def main{args: List[str] -> int}(args: List[str]) -> int:
-    c{Point} = Point{Point}.__new__{ -> Point}()
+    c{Point} = Point{class[Point]}.__new__{ -> Point}()
     c{Point}.__init__{self: Point, x: int, y: int -> }(0{int}, 0{int})
     sth_print{s: int -> }(c{Point}.x{int})
     sth_print{s: int -> }(c{Point}.y{int})
@@ -428,11 +428,11 @@ class Point():
 class Line():
 
     def __init__{self: Line -> }(self: Line):
-        self{Line}.start{Point} = Point{Point}.__new__{ -> Point}()
+        self{Line}.start{Point} = Point{class[Point]}.__new__{ -> Point}()
         self{Line}.start{Point}.__init__{self: Point, x: int, y: int -> }(0{int}, 0{int})
 
 def main{args: List[str] -> int}(args: List[str]) -> int:
-    l{Line} = Line{Line}.__new__{ -> Line}()
+    l{Line} = Line{class[Line]}.__new__{ -> Line}()
     l{Line}.__init__{self: Line -> }()
     sth_print{s: int -> }(l{Line}.start{Point}.x{int})
     sth_print{s: int -> }(l{Line}.start{Point}.y{int})
@@ -471,7 +471,7 @@ class Point():
         sth_print{s: int -> }(self{Point}.y{int})
 
 def main{args: List[str] -> int}(args: List[str]) -> int:
-    c{Point} = Point{Point}.__new__{ -> Point}()
+    c{Point} = Point{class[Point]}.__new__{ -> Point}()
     c{Point}.__init__{self: Point, x: int, y: int -> }(0{int}, 0{int})
     c{Point}.print{self: Point -> }()
     return 0{int}

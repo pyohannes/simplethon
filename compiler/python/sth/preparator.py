@@ -48,12 +48,12 @@ class FunctionArgumentsInStatus(ast.RecursiveNodeVisitor):
         self._gotoreturn = None
         self._statustp = self.make_name('SthStatus', None)
         self.STH_OK = self.make_name('STH_OK', None)
-        self.STH_OK.tp = types.Custom('SthRet')
+        self.STH_OK.tp = types.CustomType('SthRet')
 
     def visit_functiondef(self, node):
         # initialize status object
         self._statusobj = self.make_name(None, node)
-        self._statusobj.tp = types.Custom('SthStatus')
+        self._statusobj.tp = types.CustomType('SthStatus')
         self._gotoreturn = self.make_goto(self.make_name(None, node))
         self._returnobj = self.make_name(None, node)
         self._returnobjptr = self.make_pointer(self._returnobj, node)

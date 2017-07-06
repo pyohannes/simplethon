@@ -1,8 +1,12 @@
-####+
 import collections
 
 
 class Type(object):
+
+    def __init__(self):
+        if not isinstance(self, Class):
+            self.clstp = Class(self)
+
     def __str__(self):
         return self.name
 
@@ -80,35 +84,54 @@ class Bool(Type):
                                 bool_)))
 
 
-class Custom(Type):
+class CustomType(Type):                
 
     def __init__(self, name):
-        super(Custom, self).__init__()
+        super(CustomType, self).__init__()
         self.name = name
 
 
-class Collection(Type):
-
-    def __init__(self, name, subtypes):
-        super(Collection, self).__init__()
-        self.name = name
-        self.subtypes = subtypes
-
-    def __str__(self):
-        return '%s[%s]' % (self.name, ', '.join(self.subtypes))
-
-
-class List(Collection):
+class Composite(Type):
 
     def __init__(self, subtypes):
-        super(List, self).__init__('list', subtypes)
+        super(Composite, self).__init__()
+        self.subtypes = subtypes
+
+    def populate(self):
+        super(Composite, self).populate()
+        for t in self.subtypes:
+            t.populate()
+
+    def __str__(self):
+        return '%s[%s]' % (self.name, 
+                ', '.join([ str(s) for s in self.subtypes ]))
+
+
+class List(Composite):
+    name = 'List'
 
 
 class Function(Type):
 
     def __init__(self, args, returns):
+        super(Function, self).__init__()
         self.args = args
         self.returns = returns
+
+
+class Class(Composite):
+    name = 'class'
+
+    def __init__(self, cls):
+        super(Class, self).__init__([ cls ])
+
+    @property
+    def tp(self):
+        return self.subtypes[0]
+
+    @property
+    def members(self):
+        return self.tp.members
 
 
 int_ = Int()
@@ -122,8 +145,7 @@ for t in (int_, float_, bool_):
 
 
 def make_class(name):
-    c = Custom(name)
+    c = CustomType(name)
     c.populate()
     c.members['__new__'] = Function(collections.OrderedDict([]), c)
     return c
-
