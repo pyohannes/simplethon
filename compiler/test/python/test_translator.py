@@ -172,6 +172,114 @@ def test_unique_name():
 """, 0, 5)
 
 
+def test_class_init():
+    assert_translate(
+"""
+class Point():
+    def __init__(self: 'Point', x: int, y: int):
+        self.x = x
+        self.y = y
+
+def main(args: List[str]) -> int:
+    c = Point(0, 0)
+    return 0
+""",
+"""
+
+
+struct Sth_Class_Point_;
+
+typedef struct Sth_Class_Point_ Sth_Class_Point_t;
+
+struct Sth_Point_ {
+    Sth_Class_Point *cls;
+    SthInt *x;
+    SthInt *y;
+};
+
+typedef struct Sth_Point_ Sth_Point;
+
+struct Sth_Class_Point_ {
+    SthRet (*__new__)(SthStatus *, Sth_Point **, Sth_Class_Point *);
+    SthRet (*__init__)(SthStatus *, SthCraw **, Sth_Point *, SthInt *, SthInt *);
+};
+
+static SthRet _1(SthStatus *_2, SthCraw **_3, Sth_Point *_4, SthInt *_5, SthInt *_6)
+{
+  _4->x = _5;
+  _4->y = _6;
+
+  _7:
+
+  return _2->status;
+}
+
+static Sth_Class_Point_t _8 = {
+    0, /* __new__ */
+    _1  /* __init__ */
+};
+
+Sth_Class_Point_t *Sth_Class_Point= &_8;
+
+static SthRet _9(SthStatus *_10, Sth_Point **_11, Sth_Class_Point *_12)
+{
+  if (sth_allocate(_10, _11, sizeof(Sth_Point)) != STH_OK)
+  {
+    goto _13;
+  }
+
+  _8.__new__ = _9;
+  *_11->cls = &_8;
+
+
+  _13:
+
+  return _10->status;
+}
+
+SthRet sth_main(SthStatus *_12, SthInt **_13, SthList *args)
+{
+  SthPoint *c;
+  SthInt *_15;
+  SthInt *_16;
+  SthCRaw *_17;
+  SthInt *_18;
+  if (Sth_Class_Point->__new__(_12, &c, Sth_Class_Point) != STH_OK)
+  {
+    goto _14;
+  }
+
+  if (sth_int_new(_12, _15, 0) != STH_OK)
+  {
+    goto _14;
+  }
+
+  if (sth_int_new(_12, _16, 0) != STH_OK)
+  {
+    goto _14;
+  }
+
+  if (c->cls->__init__(_12, &_17, c, _15, _16) != STH_OK)
+  {
+    goto _14;
+  }
+
+  if (sth_int_new(_12, _18, 0) != STH_OK)
+  {
+    goto _14;
+  }
+
+  *_13 = _18;
+  goto _14;
+
+  _14:
+
+
+  return _12->status;
+}
+""", 0, 18)
+
+
 def test_print_int():
     assert_translate(
 """

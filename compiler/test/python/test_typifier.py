@@ -600,3 +600,19 @@ def main(args: List[str]) -> int:
     3.x = 9
     return 0
 """, "", 0)
+
+
+def test_overwrite_in_scope():
+    with pytest.raises(TypeError):
+        assert_typify(
+"""
+class Point():
+    def __init__(self: 'Point'):
+        self.x = 0
+
+def main(args: List[str]) -> int:
+    Point = Point()
+    return 0
+""", "", 0)
+
+

@@ -270,6 +270,9 @@ class CreateClassFunctionTypes(ast.RecursiveNodeVisitor, _ClassHandlingMixin):
 # identifier on the left side of the assignment has to be used during the
 # reduction. If the call is not used in an assignment, the object is assigned
 # to an anonymous variable.
+#
+# This reduction is made at this point so that the \tc{\_\_init\_\_} can be
+# properly bound and typified in later steps.
 #```
 class ReduceClassInitialization(ast.RecursiveNodeVisitor, _ClassHandlingMixin):
 

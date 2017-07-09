@@ -173,6 +173,12 @@ class RecursiveNodeVisitor(NodeVisitor):
             targets = [ targets ]
         return ast.Assign(targets=targets, value=value)
 
+    def make_call(self, func, args):
+        return ast.Call(func=func, args=args, keywords=[])
+
+    def make_return(self, value):
+        return ast.Return(value=value)
+
     def copy_source_attrs(self, src, dsts):
         try:
             dsts[0]

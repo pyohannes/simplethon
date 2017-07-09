@@ -56,6 +56,63 @@ def main{args: List[str] -> int}(id@6: SthStatus, *id@7: int, args: List[str]) -
 """, 0)
 
 
+def test_class_init():
+    assert_prepare(
+"""
+class Point():
+    def __init__(self: 'Point', x: int, y: int):
+        self.x = x
+        self.y = y
+
+def main(args: List[str]) -> int:
+    c = Point(0, 0)
+    return 0
+""",
+"""
+
+class id@1():
+    __cls__
+    x{int}
+    y{int}
+
+class id@2():
+    __size__{int}
+    __craw__{self: Point -> craw}
+    __new__{ -> Point}
+    __init__{self: Point, x: int, y: int -> }
+
+def id@3{ -> Point}(id@4: SthStatus, *id@5: Point):
+    if (sth_allocate(id@4{SthStatus}, &id@6{Point}, Point{class[Point]}.__size__) != STH_OK{SthRet}):
+        goto id@7
+    id@6{Point}.__cls__ = &Point{class[Point]}
+    *id@5{Point} = id@6{Point}
+    goto id@7
+    id@7: return id@4{SthStatus}.status
+
+def id@8{self: Point, x: int, y: int -> }(id@9: SthStatus, *id@10: craw, self: Point, x: int, y: int):
+    self{Point}.x{int} = x{int}
+    self{Point}.y{int} = y{int}
+    id@11: return id@9{SthStatus}.status
+Point{class[Point]} = id@2(sth_sizeof(id@2), id@3, id@8)
+
+def main{args: List[str] -> int}(id@12: SthStatus, *id@13: int, args: List[str]) -> int:
+    if (Point{class[Point]}.__new__{ -> Point}(id@12{SthStatus}, &c{Point}, Point{class[Point]}) != STH_OK{SthRet}):
+        goto id@14
+    if (sth_int_new{ -> int}(id@12{SthStatus}, &id@15{int}, 0{int}) != STH_OK{SthRet}):
+        goto id@14
+    if (sth_int_new{ -> int}(id@12{SthStatus}, &id@16{int}, 0{int}) != STH_OK{SthRet}):
+        goto id@14
+    
+    if (c{Point}.__init__{self: Point, x: int, y: int -> }(id@12{SthStatus}, &id@17{craw}, c{Point}, id@15{int}, id@16{int}) != STH_OK{SthRet}):
+        goto id@14
+    if (sth_int_new{ -> int}(id@12{SthStatus}, &id@18{int}, 0{int}) != STH_OK{SthRet}):
+        goto id@14
+    *id@13{int} = id@18{int}
+    goto id@14
+    id@14: return id@12{SthStatus}.status
+""", 0)
+
+
 def test_primes_example():
     assert_prepare(
 """def isprime(n: int) -> bool:

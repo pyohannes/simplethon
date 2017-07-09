@@ -319,7 +319,10 @@ class Unparser:
         for deco in t.decorator_list:
             self.fill("@")
             self.dispatch(deco)
-        self.fill("class "+t.name)
+        n = t.name
+        if isinstance(n, ast.Name):
+            n = n.id or self.generate_id[id(n)]
+        self.fill("class "+n)
         self.write("(")
         comma = False
         for e in t.bases:
@@ -360,7 +363,10 @@ class Unparser:
         for deco in t.decorator_list:
             self.fill("@")
             self.dispatch(deco)
-        self.fill(("async " if async else "") + "def " + t.name)
+        n = t.name
+        if isinstance(n, ast.Name):
+            n = n.id or self.generate_id[id(n)]
+        self.fill(("async " if async else "") + "def " + n)
         if hasattr(t, 'tp'):
             self._FunctionType(t.tp)
         self.write("(")
